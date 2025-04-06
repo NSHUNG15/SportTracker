@@ -1,0 +1,19 @@
+{
+  "name": "khmt",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "daisyui": "^5.0.12",
+    "express": "^5.1.0",
+    "tailwindcss": "^4.1.3"
+  }
+}

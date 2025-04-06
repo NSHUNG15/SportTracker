@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Schedule</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.x/dist/full.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.x/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <nav class="text-white bg-indigo-800 shadow-lg">
+        <div class="container p-4 mx-auto">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold">SportTracker</h1>
+                <div class="flex space-x-4">
+                    <a href="index.html" class="btn btn-ghost btn-sm">Schedule</a>
+                    <a href="results.html" class="btn btn-ghost btn-sm">Results</a>
+                    <a href="admin.html" class="btn btn-primary btn-sm">Admin</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container p-6 mx-auto">
+        <div class="mb-10 text-center">
+            <h1 class="mb-2 text-4xl font-bold text-indigo-900">Match Schedule</h1>
+            <p class="text-gray-600">View upcoming matches and their details</p>
+        </div>
+        
+        <!-- Search & Filter -->
+        <div class="p-4 mb-8 bg-white rounded-lg shadow-md">
+            <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
+                <div class="flex-1">
+                    <input type="text" id="search-matches" placeholder="Search matches..." class="w-full input input-bordered" onkeyup="searchMatches()">
+                </div>
+                <div class="tabs tabs-boxed">
+                    <a class="tab tab-active" onclick="filterMatches('all')">All</a>
+                    <a class="tab" onclick="filterMatches('Football')">Football</a>
+                    <a class="tab" onclick="filterMatches('Badminton')">Badminton</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Matches Section -->
+        <div id="match-list" class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <!-- Matches will be populated here -->
+        </div>
+        
+        <!-- No matches message -->
+        <div id="no-matches" class="hidden">
+            <div class="p-10 mt-6 text-center">
+                <div class="mb-4 text-5xl text-gray-300">📅</div>
+                <h3 class="mb-2 text-xl font-semibold">No matches found</h3>
+                <p class="text-gray-500">Try adjusting your search or filter criteria</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="p-6 mt-12 text-white bg-indigo-900">
+        <div class="container mx-auto text-center">
+            <p>© 2025 SportTracker. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.x/dist/full.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.x/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200">
+    <nav class="text-white bg-gray-800 shadow-lg" id="top-nav">
+        <div class="container p-4 mx-auto">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold">SportTracker Admin</h1>
+                <div class="flex hidden space-x-4" id="nav-links">
+                    <a href="index.html" class="btn btn-ghost btn-sm">Schedule</a>
+                    <a href="results.html" class="btn btn-ghost btn-sm">Results</a>
+                    <button onclick="logout()" class="btn btn-error btn-sm">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container p-6 mx-auto">
+        <!-- Login Form -->
+        <div id="login-form" class="max-w-md p-8 mx-auto my-16 bg-white rounded-lg shadow-xl">
+            <h2 class="mb-6 text-2xl font-bold text-center text-gray-800">Admin Login</h2>
+            <div class="mb-6 divider"></div>
+            <div class="form-control">
+                <label class="label">
+                    <span class="font-medium label-text">Password</span>
+                </label>
+                <input type="password" id="admin-password" class="input input-bordered" placeholder="Enter admin password">
+                <div class="mt-8">
+                    <button onclick="login()" class="w-full btn btn-primary">Login</button>
+                </div>
+                <div class="mt-4 text-center">
+                    <a href="index.html" class="text-sm text-gray-600 hover:underline">Back to Schedule</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Panel (hidden initially) -->
+        <div id="admin-controls" class="hidden">
+            <div class="mb-10 text-center">
+                <h1 class="mb-2 text-4xl font-bold text-gray-800">Match Management</h1>
+                <p class="text-gray-600">Add, edit, and manage sport matches</p>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+                <!-- Match Form Card -->
+                <div class="lg:col-span-1">
+                    <div class="p-6 bg-white rounded-lg shadow-md">
+                        <h2 class="mb-4 text-xl font-bold text-gray-800">Match Details</h2>
+                        <div class="mb-4 divider"></div>
+                        <form id="match-form">
+                            <div class="mb-4 form-control">
+                                <label class="label">
+                                    <span class="font-medium label-text">Sport</span>
+                                </label>
+                                <select id="sport" class="w-full select select-bordered">
+                                    <option value="Football">Football</option>
+                                    <option value="Badminton">Badminton</option>
+                                </select>
+                            </div>
+                            <div class="mb-4 form-control">
+                                <label class="label">
+                                    <span class="font-medium label-text">Team 1</span>
+                                </label>
+                                <input type="text" id="team1" class="input input-bordered" placeholder="Enter team name">
+                            </div>
+                            <div class="mb-4 form-control">
+                                <label class="label">
+                                    <span class="font-medium label-text">Team 2</span>
+                                </label>
+                                <input type="text" id="team2" class="input input-bordered" placeholder="Enter team name">
+                            </div>
+                            <div class="mb-4 form-control">
+                                <label class="label">
+                                    <span class="font-medium label-text">Score</span>
+                                </label>
+                                <input type="text" id="score" class="input input-bordered" placeholder="e.g., 2-1">
+                                <span class="mt-1 text-xs text-gray-500">Leave blank for upcoming matches</span>
+                            </div>
+                            <div class="mb-6 form-control">
+                                <label class="label">
+                                    <span class="font-medium label-text">Date & Time</span>
+                                </label>
+                                <input type="datetime-local" id="time" class="input input-bordered">
+                            </div>
+                            <div class="flex justify-between">
+                                <button type="reset" class="btn btn-outline">Clear</button>
+                                <button type="submit" class="btn btn-success">Save Match</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Match List -->
+                <div class="lg:col-span-2">
+                    <div class="h-full p-6 bg-white rounded-lg shadow-md">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-bold text-gray-800">Match List</h2>
+                            <div class="flex space-x-2">
+                                <input type="text" id="admin-search" placeholder="Search..." class="input input-bordered input-sm" onkeyup="searchAdminMatches()">
+                            </div>
+                        </div>
+                        <div class="mb-4 divider"></div>
+                        
+                        <!-- Tabs -->
+                        <div class="mb-6 bg-gray-100 tabs tabs-boxed">
+                            <a class="tab tab-active" onclick="filterAdminMatches('all')">All</a>
+                            <a class="tab" onclick="filterAdminMatches('Football')">Football</a>
+                            <a class="tab" onclick="filterAdminMatches('Badminton')">Badminton</a>
+                        </div>
+                        
+                        <div class="overflow-y-auto max-h-96">
+                            <div id="admin-match-list" class="grid grid-cols-1 gap-4">
+                                <!-- Admin matches will be populated here -->
+                            </div>
+                            
+                            <!-- No matches message -->
+                            <div id="no-admin-matches" class="hidden">
+                                <div class="p-6 text-center">
+                                    <div class="mb-3 text-4xl text-gray-300">📋</div>
+                                    <h3 class="mb-1 text-lg font-semibold">No matches found</h3>
+                                    <p class="text-gray-500">Add a new match using the form</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
