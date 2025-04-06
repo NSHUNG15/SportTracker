@@ -1,2 +1,2 @@
-npm install
-node server.js
+built source code: npm install
+chạy source code: node server.js
