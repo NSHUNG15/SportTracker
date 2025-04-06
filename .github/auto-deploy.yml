@@ -1,0 +1,25 @@
+name: Auto Install and Start Server
+
+on:
+  push:
+    branches:
+      - main  # hoặc branch bạn đang sử dụng
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # Chọn version Node phù hợp
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Start server
+        run: node server.js
