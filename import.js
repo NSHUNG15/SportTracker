@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const fs = require('fs').promises;
 
 async function importData() {
-    const mongoURI = 'mongodb+srv://suag4026:botcodon15@cluster0.7sbst.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+    const mongoURI = 'mongodb+srv://suag4026:botcodon15@cluster0.7sbst.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0';
   await mongoose.connect(mongoURI); // Bỏ các tùy chọn deprecated
   console.log('Connected to MongoDB Atlas');
 
