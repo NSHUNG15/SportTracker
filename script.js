@@ -46,6 +46,8 @@ function getSportIcon(sport) {
             return '⚽';
         case 'badminton':
             return '🏸';
+        case 'chess':
+            return '♟️';
         default:
             return '🎮';
     }
@@ -157,7 +159,7 @@ async function loadResults(filter = 'all') {
 
     completedMatches.forEach(match => {
         const card = document.createElement('div');
-        card.className = 'transition-shadow duration-300 bg-white shadow-lg card hover:shadow-xl';
+        card.className = 'transition-shadow duration-300 bg-white shadow-lg card hover:shadow-xl ';
         
         // Parse scores to determine winner
         const scores = match.score.split('-').map(s => parseInt(s.trim()));
@@ -218,6 +220,48 @@ function searchResults() {
     }
     
     performSearch('results-list', searchTerm);
+}
+
+function filterByRound() {
+    const round = document.getElementById('round-selector').value;
+
+    fetchMatches().then(data => {
+        const resultsList = document.getElementById('results-list');
+        const noResultsElement = document.getElementById('no-results');
+        
+        if (!resultsList) return;
+        resultsList.innerHTML = '';
+
+        // Filter matches by round
+        let filteredMatches = data.matches.filter(match => match.score);
+        if (round !== 'all') {
+            filteredMatches = filteredMatches.filter(match => match.round === `Round ${round}`);
+        }
+
+        if (filteredMatches.length === 0) {
+            if (noResultsElement) noResultsElement.classList.remove('hidden');
+            return;
+        }
+
+        if (noResultsElement) noResultsElement.classList.add('hidden');
+
+        filteredMatches.forEach(match => {
+            const card = document.createElement('div');
+            card.className = 'transition-shadow duration-300 bg-white shadow-lg card hover:shadow-xl';
+
+            card.innerHTML = `
+                <div class="card-body p-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="badge badge-outline">${formatDate(match.time)}</span>
+                        <span class="text-2xl" title="${match.sport}">${getSportIcon(match.sport)}</span>
+                    </div>
+                    <h2 class="card-title text-lg">${match.team1} vs ${match.team2}</h2>
+                    <p class="text-center text-lg font-bold">${match.score}</p>
+                </div>
+            `;
+            resultsList.appendChild(card);
+        });
+    });
 }
 
 // Admin page functions
@@ -414,6 +458,7 @@ function getActiveTab() {
     const text = activeTab.textContent.toLowerCase();
     if (text === 'football') return 'Football';
     if (text === 'badminton') return 'Badminton';
+    if (text === 'chess') return 'Chess';
     return 'all';
 }
 
@@ -427,7 +472,8 @@ function updateTabStyles(activeFilter) {
         
         if ((tabText === 'all' && filterText === 'all') || 
             (tabText === 'football' && filterText === 'football') ||
-            (tabText === 'badminton' && filterText === 'badminton')) {
+            (tabText === 'badminton' && filterText === 'badminton') || 
+            (tabText === 'chess' && filterText === 'chess')) {
             tab.classList.add('tab-active');
         }
     });
@@ -442,18 +488,20 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
     const team2 = document.getElementById('team2').value.trim();
     const score = document.getElementById('score').value.trim();
     const time = document.getElementById('time').value;
-    
-    if (!team1 || !team2 || !time) {
+    const round = `Round ${document.getElementById('round').value.trim()}`;
+
+    if (!team1 || !team2 || !time || isNaN(round)) {
         showToast('Please fill in all required fields', 'warning');
         return;
     }
-    
+
     const match = {
         sport,
         team1,
         team2,
         score,
-        time
+        time,
+        round
     };
 
     const data = await fetchMatches();
@@ -477,11 +525,34 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
     }
 });
 
+async function updateRoundOptions() {
+    const data = await fetchMatches();
+    const roundSelector = document.getElementById('round-selector');
+
+    if (!roundSelector) return;
+
+    // Lấy danh sách các round duy nhất từ dữ liệu
+    const rounds = [...new Set(data.matches.map(match => match.round))].sort();
+
+    // Xóa các tùy chọn hiện tại
+    roundSelector.innerHTML = '<option value="all">All Rounds</option>';
+
+    // Thêm các tùy chọn mới
+    rounds.forEach(round => {
+        const option = document.createElement('option');
+        option.value = round.replace('Round ', ''); // Loại bỏ chữ "Round " để giữ giá trị số
+        option.textContent = round;
+        roundSelector.appendChild(option);
+    });
+}
+
 // Load appropriate content based on page
 window.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('match-list')) {
         loadMatches();
+        updateRoundOptions(); // Cập nhật danh sách round
     } else if (document.getElementById('results-list')) {
         loadResults();
+        updateRoundOptions(); // Cập nhật danh sách round
     }
 });

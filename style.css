@@ -46,6 +46,13 @@ body {
     transform: translateY(-3px);
 }
 
+.card .badge-won {
+    position: absolute;
+    top: -10px; /* Đẩy badge lên cao hơn */
+    right: 10px;
+    z-index: 10;
+}
+
 /* Form focus effects */
 .input:focus, .select:focus {
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);

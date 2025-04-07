@@ -1,53 +1,44 @@
 {
   "matches": [
     {
+      "sport": "Football",
       "team1": "Team A",
       "team2": "Team B",
       "score": "2-1",
-      "time": "2025-02-14T19:00",
-      "sport": "Football"
-    },
-    {
-      "sport": "Football",
-      "team1": "Player 1",
-      "team2": "Player 2",
-      "score": "1-2",
-      "time": "2025-04-15T14:00"
-    },
-    {
-      "sport": "Football",
-      "team1": "Player 1",
-      "team2": "Player 2",
-      "score": "1-2",
-      "time": "2025-02-12T17:00"
+      "time": "2025-04-07T15:00:00",
+      "round": "Round 1"
     },
     {
       "sport": "Badminton",
-      "team1": "Player 1",
-      "team2": "Player 2",
-      "score": "4-2",
-      "time": "2024-02-20T19:00"
+      "team1": "Player X",
+      "team2": "Player Y",
+      "score": "21-18",
+      "time": "2025-04-07T16:00:00",
+      "round": "Round 2"
+    },
+    {
+      "sport": "Chess",
+      "team1": "Player A",
+      "team2": "Player B",
+      "score": "6-4",
+      "time": "2025-04-07T17:00:00",
+      "round": "Round 3"
     },
     {
       "sport": "Badminton",
-      "team1": "1",
-      "team2": "2",
-      "score": "1-2",
-      "time": "2003-04-01T19:00"
+      "team1": "Team C",
+      "team2": "Team D",
+      "score": "89-76",
+      "time": "2025-04-07T18:00:00",
+      "round": "Round 4"
     },
     {
       "sport": "Football",
       "team1": "a",
-      "team2": "q",
+      "team2": "b",
       "score": "",
-      "time": "2025-04-24T19:00"
-    },
-    {
-      "sport": "Badminton",
-      "team1": "a",
-      "team2": "a",
-      "score": "",
-      "time": "2025-04-24T19:00"
+      "time": "2025-04-22T19:00",
+      "round": "Round 1"
     }
   ]
 }
