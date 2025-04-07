@@ -335,7 +335,7 @@ async function loadAdminMatches(filter = 'all') {
                     <div class="dropdown dropdown-end">
                         <div tabindex="0" class="btn btn-ghost btn-xs">⋮</div>
                         <ul tabindex="0" class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-32">
-                            <li><a onclick="editMatch(${data.matches.indexOf(match)})">Edit</a></li>
+                            <li><a onclick="editMatch('${match._id}')">Edit</a></li>
                             <li><a onclick="deleteMatch(${data.matches.indexOf(match)})" class="text-error">Delete</a></li>
                         </ul>
                     </div>
@@ -401,26 +401,49 @@ function performSearch(listId, searchTerm) {
     }
 }
 
-function editMatch(index) {
-    fetchMatches().then(data => {
-        const match = data.matches[index];
-        document.getElementById('sport').value = match.sport;
-        document.getElementById('team1').value = match.team1;
-        document.getElementById('team2').value = match.team2;
-        document.getElementById('score').value = match.score || '';
-        document.getElementById('time').value = match.time.slice(0, 16);
-        document.getElementById('match-form').dataset.editIndex = index;
-        
-        // Scroll to form
-        document.getElementById('match-form').scrollIntoView({ behavior: 'smooth' });
-        
-        // Highlight form
-        const formCard = document.getElementById('match-form').closest('.card');
-        formCard.classList.add('border-2', 'border-primary');
-        setTimeout(() => {
-            formCard.classList.remove('border-2', 'border-primary');
-        }, 1500);
-    });
+// Sửa chức năng editMatch để lấy dữ liệu từ MongoDB
+function editMatch(matchId) {
+    if (!matchId) {
+        showToast('Invalid match ID provided', 'error');
+        return;
+    }
+
+    fetch(`http://localhost:8000/match/${matchId}`)
+        .then(response => {
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('Match not found');
+                }
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(match => {
+            if (!match || !match._id) {
+                throw new Error('Invalid match data received');
+            }
+
+            // Điền dữ liệu vào form
+            document.getElementById('sport').value = match.sport || '';
+            document.getElementById('team1').value = match.team1 || '';
+            document.getElementById('team2').value = match.team2 || '';
+            document.getElementById('score').value = match.score || '';
+            // Chuyển đổi thời gian về định dạng datetime-local (YYYY-MM-DDTHH:MM)
+            document.getElementById('time').value = match.time ? new Date(match.time).toISOString().slice(0, 16) : '';
+            document.getElementById('round').value = match.round ? match.round.replace('Round ', '') : '';
+            document.getElementById('match-form').dataset.matchId = match._id; // Lưu ID vào dataset
+
+            // Cuộn đến form và làm nổi bật
+            const form = document.getElementById('match-form');
+            form.scrollIntoView({ behavior: 'smooth' });
+            const formCard = form.closest('.card');
+            formCard.classList.add('border-2', 'border-primary');
+            setTimeout(() => formCard.classList.remove('border-2', 'border-primary'), 1500);
+        })
+        .catch(error => {
+            console.error('Error fetching match:', error);
+            showToast(`Error: ${error.message}`, 'error');
+        });
 }
 
 function deleteMatch(index) {
@@ -479,19 +502,21 @@ function updateTabStyles(activeFilter) {
     });
 }
 
+// Sửa chức năng submit form để thêm mới hoặc cập nhật dữ liệu
 document.getElementById('match-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
-    // Validate form
+
+    // Lấy dữ liệu từ form
     const sport = document.getElementById('sport').value;
     const team1 = document.getElementById('team1').value.trim();
     const team2 = document.getElementById('team2').value.trim();
     const score = document.getElementById('score').value.trim();
-    const time = document.getElementById('time').value;
+    const time = document.getElementById('time').value; // Định dạng ISO (YYYY-MM-DDTHH:MM)
     const round = `Round ${document.getElementById('round').value.trim()}`;
 
-    if (!team1 || !team2 || !time || isNaN(round)) {
-        showToast('Please fill in all required fields', 'warning');
+    // Validate form
+    if (!sport || !team1 || !team2 || !time || isNaN(round.replace('Round ', ''))) {
+        showToast('Please fill in all required fields correctly', 'warning');
         return;
     }
 
@@ -500,28 +525,43 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
         team1,
         team2,
         score,
-        time,
-        round
+        time: new Date(time).toISOString(), // Chuyển đổi về định dạng ISO đầy đủ
+        round,
+        status: score ? 'Completed' : 'Upcoming' // Tự động cập nhật status
     };
 
-    const data = await fetchMatches();
-    const editIndex = document.getElementById('match-form').dataset.editIndex;
+    const matchId = document.getElementById('match-form').dataset.matchId;
 
-    if (editIndex !== undefined) {
-        data.matches[editIndex] = match;
-        delete document.getElementById('match-form').dataset.editIndex;
-        showToast('Match updated successfully', 'success');
-    } else {
-        data.matches.push(match);
-        showToast('New match added successfully', 'success');
-    }
+    try {
+        let response;
+        if (matchId) {
+            // Cập nhật trận đấu
+            response = await fetch(`http://localhost:8000/match/${matchId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(match)
+            });
+        } else {
+            // Thêm trận đấu mới
+            response = await fetch('http://localhost:8000/match', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(match)
+            });
+        }
 
-    const result = await saveMatches(data);
-    if (result.success) {
-        loadAdminMatches(getActiveTab());
-        document.getElementById('match-form').reset();
-    } else {
-        showToast('Error saving data', 'error');
+        const result = await response.json();
+        if (result.success) {
+            showToast(matchId ? 'Match updated successfully' : 'New match added successfully', 'success');
+            loadAdminMatches(getActiveTab()); // Tải lại danh sách
+            document.getElementById('match-form').reset(); // Xóa form
+            delete document.getElementById('match-form').dataset.matchId; // Xóa matchId khỏi dataset
+        } else {
+            showToast(`Error: ${result.error || 'Failed to save match'}`, 'error');
+        }
+    } catch (error) {
+        console.error('Error saving match:', error);
+        showToast(`Error saving match: ${error.message}`, 'error');
     }
 });
 

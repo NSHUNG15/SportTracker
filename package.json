@@ -6,7 +6,6 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js"
-
   },
   "keywords": [],
   "author": "",
@@ -16,6 +15,8 @@
     "cors": "^2.8.5",
     "daisyui": "^5.0.12",
     "express": "^5.1.0",
+    "mongodb": "^6.15.0",
+    "mongoose": "^8.13.2",
     "tailwindcss": "^4.1.3"
   }
 }
