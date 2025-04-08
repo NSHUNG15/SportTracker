@@ -56,68 +56,6 @@ function getSportIcon(sport) {
     }
 }
 
-// User page (schedule) functions
-async function loadMatches(filter = 'all') {
-    const data = await fetchMatches();
-    const matchList = document.getElementById('match-list');
-    const noMatchesElement = document.getElementById('no-matches');
-    
-    if (!matchList) return;
-    matchList.innerHTML = '';
-
-    // Check if data.matches exists and has items
-    if (!data.matches || data.matches.length === 0) {
-        if (noMatchesElement) noMatchesElement.classList.remove('hidden');
-        console.log('No matches data available');
-        return;
-    }
-
-    // Filter by sport and upcoming matches (no score)
-    let filteredMatches = data.matches.filter(match => !match.score || match.score === '');
-    if (filter !== 'all') {
-        filteredMatches = filteredMatches.filter(match => match.sport === filter);
-    }
-    
-    // Sort by time
-    filteredMatches.sort((a, b) => new Date(a.time) - new Date(b.time));
-
-    if (filteredMatches.length === 0) {
-        if (noMatchesElement) noMatchesElement.classList.remove('hidden');
-        return;
-    }
-    
-    if (noMatchesElement) noMatchesElement.classList.add('hidden');
-
-    filteredMatches.forEach(match => {
-        const card = document.createElement('div');
-        card.className = 'transition-shadow duration-300 bg-white shadow-lg card hover:shadow-xl';
-        
-        const matchTime = new Date(match.time);
-        const isToday = new Date().toDateString() === matchTime.toDateString();
-        const statusClass = isToday ? 'badge-secondary' : 'badge-primary';
-        const statusText = isToday ? 'Today' : formatDateShort(matchTime);
-        
-        card.innerHTML = `
-            <div class="card-body p-6">
-                <div class="flex justify-between items-center mb-3">
-                    <span class="badge ${statusClass}">${statusText}</span>
-                    <span class="text-2xl" title="${match.sport}">${getSportIcon(match.sport)}</span>
-                </div>
-                <h2 class="card-title text-lg">${match.team1} vs ${match.team2}</h2>
-                <div class="flex justify-between items-center mt-4">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">${formatTime(matchTime)}</p>
-                    </div>
-                    <button class="btn btn-sm btn-outline btn-primary">Details</button>
-                </div>
-            </div>
-        `;
-        matchList.appendChild(card);
-    });
-
-    updateTabStyles(filter);
-}
-
 // Keep other helper functions the same
 function formatDateShort(date) {
     const options = { month: 'short', day: 'numeric' };
@@ -127,103 +65,6 @@ function formatDateShort(date) {
 function formatTime(date) {
     const options = { hour: '2-digit', minute: '2-digit' };
     return date.toLocaleTimeString(undefined, options);
-}
-
-function filterMatches(sport) {
-    loadMatches(sport);
-}
-
-function searchMatches() {
-    const searchTerm = document.getElementById('search-matches')?.value.toLowerCase();
-    if (!searchTerm) {
-        loadMatches(getActiveTab());
-        return;
-    }
-    
-    performSearch('match-list', searchTerm);
-}
-
-// Results page functions
-async function loadResults(filter = 'all') {
-    const data = await fetchMatches();
-    const resultsList = document.getElementById('results-list');
-    const noResultsElement = document.getElementById('no-results');
-    
-    if (!resultsList) return;
-    resultsList.innerHTML = '';
-
-    // Check if data.matches exists and has items
-    if (!data.matches || data.matches.length === 0) {
-        if (noResultsElement) noResultsElement.classList.remove('hidden');
-        console.log('No matches data available for results');
-        return;
-    }
-
-    // Filter by completed matches (with score)
-    let completedMatches = data.matches.filter(match => match.score && match.score !== '');
-    if (filter !== 'all') {
-        completedMatches = completedMatches.filter(match => match.sport === filter);
-    }
-    
-    // Sort by date (newest first)
-    completedMatches.sort((a, b) => new Date(b.time) - new Date(a.time));
-
-    if (completedMatches.length === 0) {
-        if (noResultsElement) noResultsElement.classList.remove('hidden');
-        return;
-    }
-    
-    if (noResultsElement) noResultsElement.classList.add('hidden');
-
-    completedMatches.forEach(match => {
-        const card = document.createElement('div');
-        card.className = 'transition-shadow duration-300 bg-white shadow-lg card hover:shadow-xl ';
-        
-        // Parse scores to determine winner
-        const scores = match.score.split('-').map(s => parseInt(s.trim()));
-        let resultBadge = '';
-        
-        if (scores.length === 2) {
-            if (scores[0] > scores[1]) {
-                resultBadge = `<div class="absolute top-0 right-0 m-2">
-                    <span class="badge badge-success p-3">${match.team1} won</span>
-                </div>`;
-            } else if (scores[0] < scores[1]) {
-                resultBadge = `<div class="absolute top-0 right-0 m-2">
-                    <span class="badge badge-success p-3">${match.team2} won</span>
-                </div>`;
-            } else {
-                resultBadge = `<div class="absolute top-0 right-0 m-2">
-                    <span class="badge badge-info p-3">Draw</span>
-                </div>`;
-            }
-        }
-        
-        card.innerHTML = `
-            <div class="card-body p-6 relative">
-                ${resultBadge}
-                <div class="flex justify-between items-center mb-3">
-                    <span class="badge badge-outline">${formatDate(match.time)}</span>
-                    <span class="text-2xl" title="${match.sport}">${getSportIcon(match.sport)}</span>
-                </div>
-                
-                <div class="flex justify-between items-center my-4">
-                    <div class="text-center flex-1">
-                        <p class="font-semibold text-lg">${match.team1}</p>
-                    </div>
-                    <div class="text-center px-4">
-                        <p class="text-2xl font-bold">${match.score}</p>
-                    </div>
-                    <div class="text-center flex-1">
-                        <p class="font-semibold text-lg">${match.team2}</p>
-                    </div>
-                </div>
-            </div>
-        `;
-        resultsList.appendChild(card);
-    });
-
-    updateTabStyles(filter);
 }
 
 // Update admin functions to use correct API paths
@@ -271,164 +112,6 @@ function editMatch(matchId) {
             showToast(`Error: ${error.message}`, 'error');
         });
 }
-
-// Keep other admin functions but update API endpoints
-function filterResults(sport) {
-    loadResults(sport);
-}
-
-function searchResults() {
-    const searchTerm = document.getElementById('search-results')?.value.toLowerCase();
-    if (!searchTerm) {
-        loadResults(getActiveTab());
-        return;
-    }
-    
-    performSearch('results-list', searchTerm);
-}
-
-// Hàm filterByRound() được sửa lại
-async function filterByRound() {
-    const round = document.getElementById('round-selector').value;
-    const matchList = document.getElementById('match-list');
-    const noMatchesElement = document.getElementById('no-matches');
-    
-    if (!matchList) return;
-
-    // Lấy dữ liệu trận đấu
-    const data = await fetchMatches();
-    matchList.innerHTML = '';
-
-    // Kiểm tra nếu không có dữ liệu
-    if (!data.matches || data.matches.length === 0) {
-        if (noMatchesElement) noMatchesElement.classList.remove('hidden');
-        return;
-    }
-
-    // Lọc các trận đấu chưa hoàn thành (upcoming) theo round
-    let filteredMatches = data.matches.filter(match => !match.score || match.score === '');
-    if (round !== 'all') {
-        filteredMatches = filteredMatches.filter(match => match.round === `Round ${round}`);
-    }
-
-    // Sắp xếp theo thời gian
-    filteredMatches.sort((a, b) => new Date(a.time) - new Date(b.time));
-
-    if (filteredMatches.length === 0) {
-        if (noMatchesElement) noMatchesElement.classList.remove('hidden');
-        return;
-    }
-
-    if (noMatchesElement) noMatchesElement.classList.add('hidden');
-
-    // Hiển thị danh sách trận đấu
-    filteredMatches.forEach(match => {
-        const card = document.createElement('div');
-        card.className = 'transition-shadow duration-300 bg-white shadow-lg card hover:shadow-xl';
-        
-        const matchTime = new Date(match.time);
-        const isToday = new Date().toDateString() === matchTime.toDateString();
-        const statusClass = isToday ? 'badge-secondary' : 'badge-primary';
-        const statusText = isToday ? 'Today' : formatDateShort(matchTime);
-        
-        card.innerHTML = `
-            <div class="card-body p-6">
-                <div class="flex justify-between items-center mb-3">
-                    <span class="badge ${statusClass}">${statusText}</span>
-                    <span class="text-2xl" title="${match.sport}">${getSportIcon(match.sport)}</span>
-                </div>
-                <h2 class="card-title text-lg">${match.team1} vs ${match.team2}</h2>
-                <div class="flex justify-between items-center mt-4">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">${formatTime(matchTime)}</p>
-                    </div>
-                    <button class="btn btn-sm btn-outline btn-primary">Details</button>
-                </div>
-            </div>
-        `;
-        matchList.appendChild(card);
-    });
-}
-
-// Cập nhật lại hàm loadMatches để đồng bộ với filterByRound
-async function loadMatches(filter = 'all') {
-    const data = await fetchMatches();
-    const matchList = document.getElementById('match-list');
-    const noMatchesElement = document.getElementById('no-matches');
-    
-    if (!matchList) return;
-    matchList.innerHTML = '';
-
-    if (!data.matches || data.matches.length === 0) {
-        if (noMatchesElement) noMatchesElement.classList.remove('hidden');
-        console.log('No matches data available');
-        return;
-    }
-
-    // Lọc các trận đấu chưa hoàn thành (upcoming)
-    let filteredMatches = data.matches.filter(match => !match.score || match.score === '');
-    if (filter !== 'all') {
-        filteredMatches = filteredMatches.filter(match => match.sport === filter);
-    }
-    
-    filteredMatches.sort((a, b) => new Date(a.time) - new Date(b.time));
-
-    if (filteredMatches.length === 0) {
-        if (noMatchesElement) noMatchesElement.classList.remove('hidden');
-        return;
-    }
-    
-    if (noMatchesElement) noMatchesElement.classList.add('hidden');
-
-    filteredMatches.forEach(match => {
-        const card = document.createElement('div');
-        card.className = 'transition-shadow duration-300 bg-white shadow-lg card hover:shadow-xl';
-        
-        const matchTime = new Date(match.time);
-        const isToday = new Date().toDateString() === matchTime.toDateString();
-        const statusClass = isToday ? 'badge-secondary' : 'badge-primary';
-        const statusText = isToday ? 'Today' : formatDateShort(matchTime);
-        
-        card.innerHTML = `
-            <div class="card-body p-6">
-                <div class="flex justify-between items-center mb-3">
-                    <span class="badge ${statusClass}">${statusText}</span>
-                    <span class="text-2xl" title="${match.sport}">${getSportIcon(match.sport)}</span>
-                </div>
-                <h2 class="card-title text-lg">${match.team1} vs ${match.team2}</h2>
-                <div class="flex justify-between items-center mt-4">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">${formatTime(matchTime)}</p>
-                    </div>
-                    <button class="btn btn-sm btn-outline btn-primary">Details</button>
-                </div>
-            </div>
-        `;
-        matchList.appendChild(card);
-    });
-
-    updateTabStyles(filter);
-    // Gọi updateRoundOptions để đảm bảo danh sách round được cập nhật
-    updateRoundOptions();
-}
-
-// Đảm bảo round options được cập nhật khi tải trang
-window.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM loaded, initializing app...");
-    
-    if (document.getElementById('match-list')) {
-        console.log("Loading matches for schedule page");
-        loadMatches();
-        updateRoundOptions();
-    } else if (document.getElementById('results-list')) {
-        console.log("Loading results page");
-        loadResults();
-        updateRoundOptions();
-    } else if (document.getElementById('admin-match-list')) {
-        console.log("Loading admin page");
-    }
-});
-
 
 // Update form submission
 document.getElementById('match-form')?.addEventListener('submit', async (e) => {
@@ -643,34 +326,6 @@ function showToast(message, type = 'info') {
     setTimeout(() => toast.remove(), 3000);
 }
 
-// Get currently active tab filter
-function getActiveTab() {
-    const activeTab = document.querySelector('.tab.tab-active');
-    if (!activeTab) return 'all';
-    
-    const text = activeTab.textContent.toLowerCase();
-    if (text === 'football') return 'Football';
-    if (text === 'badminton') return 'Badminton';
-    if (text === 'chess') return 'Chess';
-    return 'all';
-}
-
-// Helper function to update tab styles
-function updateTabStyles(activeFilter) {
-    const tabs = document.querySelectorAll('.tab');
-    tabs.forEach(tab => {
-        tab.classList.remove('tab-active');
-        const tabText = tab.textContent.toLowerCase();
-        const filterText = activeFilter.toLowerCase();
-        
-        if ((tabText === 'all' && filterText === 'all') || 
-            (tabText === 'football' && filterText === 'football') ||
-            (tabText === 'badminton' && filterText === 'badminton') || 
-            (tabText === 'chess' && filterText === 'chess')) {
-            tab.classList.add('tab-active');
-        }
-    });
-}
 
 async function updateRoundOptions() {
     const data = await fetchMatches();
@@ -728,20 +383,323 @@ function logout() {
     document.getElementById('admin-password').value = '';
 }
 
-// Load appropriate content based on page
+
+// Functions for the Schedule page
+async function loadMatches(filter = 'all') {
+    const data = await fetchMatches();
+    const roundsContainer = document.getElementById('rounds-container');
+    const noMatchesElement = document.getElementById('no-matches');
+    
+    if (!roundsContainer) return;
+    roundsContainer.innerHTML = '';
+
+    if (!data.matches || data.matches.length === 0) {
+        if (noMatchesElement) noMatchesElement.classList.remove('hidden');
+        console.log('No matches data available');
+        return;
+    }
+
+    // Filter upcoming matches (no score)
+    let filteredMatches = data.matches.filter(match => !match.score || match.score === '');
+    if (filter !== 'all') {
+        filteredMatches = filteredMatches.filter(match => match.sport === filter);
+    }
+    
+    // Group matches by round
+    const matchesByRound = {};
+    filteredMatches.forEach(match => {
+        if (!matchesByRound[match.round]) {
+            matchesByRound[match.round] = [];
+        }
+        matchesByRound[match.round].push(match);
+    });
+
+    if (Object.keys(matchesByRound).length === 0) {
+        if (noMatchesElement) noMatchesElement.classList.remove('hidden');
+        return;
+    }
+    
+    if (noMatchesElement) noMatchesElement.classList.add('hidden');
+
+    // Sort rounds
+    const sortedRounds = Object.keys(matchesByRound).sort();
+
+    // Display matches by round
+    sortedRounds.forEach(round => {
+        // Create round title
+        const roundSection = document.createElement('div');
+        roundSection.className = 'mb-8';
+        
+        const roundTitle = document.createElement('h1');
+        roundTitle.className = 'mb-4 text-2xl font-bold text-indigo-900';
+        roundTitle.textContent = round;
+        roundSection.appendChild(roundTitle);
+
+        // Create container for matches
+        const matchList = document.createElement('div');
+        matchList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3';
+        
+        // Sort matches by time within each round
+        matchesByRound[round].sort((a, b) => new Date(a.time) - new Date(b.time));
+
+        // Create cards for each match
+        matchesByRound[round].forEach(match => {
+            const card = document.createElement('div');
+            card.className = 'transition-shadow duration-300 bg-white shadow-lg card hover:shadow-xl';
+            
+            const matchTime = new Date(match.time);
+            const isToday = new Date().toDateString() === matchTime.toDateString();
+            const statusClass = isToday ? 'badge-secondary' : 'badge-primary';
+            const statusText = isToday ? 'Today' : formatDateShort(matchTime);
+            
+            card.innerHTML = `
+                <div class="card-body p-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="badge ${statusClass}">${statusText}</span>
+                        <span class="text-2xl" title="${match.sport}">${getSportIcon(match.sport)}</span>
+                    </div>
+                    <h2 class="card-title text-lg">${match.team1} vs ${match.team2}</h2>
+                    <div class="flex justify-between items-center mt-4">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">${formatTime(matchTime)}</p>
+                        </div>
+                    <button class="btn btn-sm btn-outline btn-primary">Details</button>
+                    </div>
+                </div>
+            `;
+            matchList.appendChild(card);
+        });
+
+        roundSection.appendChild(matchList);
+        roundsContainer.appendChild(roundSection);
+    });
+
+    updateTabStyles(filter);
+}
+
+// Functions for the Results page
+async function loadResults(filter = 'all') {
+    const data = await fetchMatches();
+    const roundsContainer = document.getElementById('results-container');
+    const noResultsElement = document.getElementById('no-results');
+    
+    if (!roundsContainer) return;
+    roundsContainer.innerHTML = '';
+
+    if (!data.matches || data.matches.length === 0) {
+        if (noResultsElement) noResultsElement.classList.remove('hidden');
+        console.log('No matches data available for results');
+        return;
+    }
+
+    // Filter completed matches (with score)
+    let completedMatches = data.matches.filter(match => match.score && match.score !== '');
+    if (filter !== 'all') {
+        completedMatches = completedMatches.filter(match => match.sport === filter);
+    }
+    
+    // Group matches by round
+    const matchesByRound = {};
+    completedMatches.forEach(match => {
+        if (!matchesByRound[match.round]) {
+            matchesByRound[match.round] = [];
+        }
+        matchesByRound[match.round].push(match);
+    });
+
+    if (Object.keys(matchesByRound).length === 0) {
+        if (noResultsElement) noResultsElement.classList.remove('hidden');
+        return;
+    }
+    
+    if (noResultsElement) noResultsElement.classList.add('hidden');
+
+    // Sort rounds
+    const sortedRounds = Object.keys(matchesByRound).sort();
+
+    // Display results by round
+    sortedRounds.forEach(round => {
+        // Create round title
+        const roundSection = document.createElement('div');
+        roundSection.className = 'mb-8';
+        
+        const roundTitle = document.createElement('h1');
+        roundTitle.className = 'mb-4 text-2xl font-bold text-indigo-900';
+        roundTitle.textContent = round;
+        roundSection.appendChild(roundTitle);
+
+        // Create container for results
+        const resultsList = document.createElement('div');
+        resultsList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3';
+        
+        // Sort matches by time (newest first)
+        matchesByRound[round].sort((a, b) => new Date(b.time) - new Date(a.time));
+
+        // Create cards for each result
+        matchesByRound[round].forEach(match => {
+            const card = document.createElement('div');
+            card.className = 'transition-shadow duration-300 bg-white shadow-lg card hover:shadow-xl';
+            
+            const scores = match.score.split('-').map(s => parseInt(s.trim()));
+            let resultBadge = '';
+            
+            if (scores.length === 2) {
+                if (scores[0] > scores[1]) {
+                    resultBadge = `<div class="absolute top-0 right-0 m-2">
+                        <span class="badge badge-success p-3">${match.team1} won</span>
+                    </div>`;
+                } else if (scores[0] < scores[1]) {
+                    resultBadge = `<div class="absolute top-0 right-0 m-2">
+                        <span class="badge badge-success p-3">${match.team2} won</span>
+                    </div>`;
+                } else {
+                    resultBadge = `<div class="absolute top-0 right-0 m-2">
+                        <span class="badge badge-info p-3">Draw</span>
+                    </div>`;
+                }
+            }
+            
+            card.innerHTML = `
+                <div class="card-body p-6 relative">
+                    ${resultBadge}
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="badge badge-outline">${formatDate(match.time)}</span>
+                        <span class="text-2xl" title="${match.sport}">${getSportIcon(match.sport)}</span>
+                    </div>
+                    <div class="flex justify-between items-center my-4">
+                        <div class="text-center flex-1">
+                            <p class="font-semibold text-lg">${match.team1}</p>
+                        </div>
+                        <div class="text-center px-4">
+                            <p class="text-2xl font-bold">${match.score}</p>
+                        </div>
+                        <div class="text-center flex-1">
+                            <p class="font-semibold text-lg">${match.team2}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            resultsList.appendChild(card);
+        });
+
+        roundSection.appendChild(resultsList);
+        roundsContainer.appendChild(roundSection);
+    });
+
+    updateTabStyles(filter);
+}
+
+// Search functions
+function searchMatches() {
+    const searchTerm = document.getElementById('search-matches')?.value.toLowerCase();
+    if (!searchTerm) {
+        loadMatches(getActiveTab());
+        return;
+    }
+    
+    const roundsContainer = document.getElementById('rounds-container');
+    if (!roundsContainer) return;
+    
+    const cards = roundsContainer.getElementsByClassName('card');
+    let foundAny = false;
+    
+    // Hide/show matches based on search term
+    for (let card of cards) {
+        const text = card.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            card.classList.remove('hidden');
+            foundAny = true;
+        } else {
+            card.classList.add('hidden');
+        }
+    }
+    
+    // Show/hide no matches message
+    const noMatchesElement = document.getElementById('no-matches');
+    if (noMatchesElement) {
+        noMatchesElement.classList.toggle('hidden', foundAny);
+    }
+}
+
+function searchResults() {
+    const searchTerm = document.getElementById('search-results')?.value.toLowerCase();
+    if (!searchTerm) {
+        loadResults(getActiveTab());
+        return;
+    }
+    
+    const resultsContainer = document.getElementById('results-container');
+    if (!resultsContainer) return;
+    
+    const cards = resultsContainer.getElementsByClassName('card');
+    let foundAny = false;
+    
+    // Hide/show results based on search term
+    for (let card of cards) {
+        const text = card.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            card.classList.remove('hidden');
+            foundAny = true;
+        } else {
+            card.classList.add('hidden');
+        }
+    }
+    
+    // Show/hide no results message
+    const noResultsElement = document.getElementById('no-results');
+    if (noResultsElement) {
+        noResultsElement.classList.toggle('hidden', foundAny);
+    }
+}
+
+// Filter functions
+function filterMatches(sport) {
+    loadMatches(sport);
+}
+
+function filterResults(sport) {
+    loadResults(sport);
+}
+
+// Helper function to update tab styles
+function updateTabStyles(activeFilter) {
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(tab => {
+        tab.classList.remove('tab-active');
+        const tabText = tab.textContent.toLowerCase();
+        const filterText = activeFilter.toLowerCase();
+        
+        if ((tabText === 'all' && filterText === 'all') || 
+            (tabText === 'football' && filterText === 'football') ||
+            (tabText === 'badminton' && filterText === 'badminton') || 
+            (tabText === 'chess' && filterText === 'chess')) {
+            tab.classList.add('tab-active');
+        }
+    });
+}
+
+// Get currently active tab filter
+function getActiveTab() {
+    const activeTab = document.querySelector('.tab.tab-active');
+    if (!activeTab) return 'all';
+    
+    const text = activeTab.textContent.toLowerCase();
+    if (text === 'football') return 'Football';
+    if (text === 'badminton') return 'Badminton';
+    if (text === 'chess') return 'Chess';
+    return 'all';
+}
+
+// Initialize app on page load
 window.addEventListener('DOMContentLoaded', () => {
     console.log("DOM loaded, initializing app...");
     
-    if (document.getElementById('match-list')) {
+    if (document.getElementById('rounds-container') && document.querySelector('h1.text-4xl').textContent.includes('Schedule')) {
         console.log("Loading matches for schedule page");
         loadMatches();
-        updateRoundOptions();
-    } else if (document.getElementById('results-list')) {
+    } else if (document.getElementById('results-container') || 
+              (document.getElementById('rounds-container') && document.querySelector('h1.text-4xl').textContent.includes('Results'))) {
         console.log("Loading results page");
         loadResults();
-        updateRoundOptions();
-    } else if (document.getElementById('admin-match-list')) {
-        console.log("Loading admin page");
-        // Don't auto-load admin matches until login
     }
 });
