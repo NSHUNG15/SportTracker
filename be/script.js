@@ -179,7 +179,9 @@ function login() {
         document.getElementById('login-form')?.classList.add('hidden');
         document.getElementById('admin-controls')?.classList.remove('hidden');
         document.getElementById('nav-links')?.classList.remove('hidden');
-        loadAdminMatches();
+        loadAdminMatches('all').then(() => {
+            updateEventTypeFilter('all'); 
+        });
     } else {
         // Show error toast
         const toast = document.createElement('div');
@@ -224,8 +226,7 @@ async function loadMatches(sport = 'all', eventType = 'all') {
     
     const matchesByRound = {};
     filteredMatches.forEach(match => {
-        // Sử dụng giá trị round trực tiếp từ dữ liệu
-        const roundText = match.round;
+        const roundText = match.round; // Giá trị round do admin nhập
         if (!matchesByRound[roundText]) matchesByRound[roundText] = [];
         matchesByRound[roundText].push(match);
     });
@@ -236,20 +237,22 @@ async function loadMatches(sport = 'all', eventType = 'all') {
     }
     noMatchesElement.classList.add('hidden');
 
-    const sortedRounds = Object.keys(matchesByRound).sort();
+    // Sắp xếp các vòng theo thứ tự ưu tiên từ cao xuống thấp
+    const sortedRounds = Object.keys(matchesByRound).sort((a, b) => getRoundPriority(b) - getRoundPriority(a));
+    
     sortedRounds.forEach(round => {
         const roundSection = document.createElement('div');
         roundSection.className = 'mb-8';
         
         const roundTitle = document.createElement('h1');
         roundTitle.className = 'mb-4 text-2xl font-bold text-indigo-900';
-        roundTitle.textContent = round; // Hiển thị trực tiếp "Vòng bảng 1", "Bán kết", v.v.
+        roundTitle.textContent = round; // Hiển thị giá trị round do admin nhập
         roundSection.appendChild(roundTitle);
 
         const matchList = document.createElement('div');
         matchList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3';
         
-        matchesByRound[round].sort((a, b) => new Date(a.time) - new Date(b.time));
+        matchesByRound[round].sort((a, b) => new Date(a.time) - new Date(b.time)); // Sắp xếp trận trong vòng theo thời gian
         matchesByRound[round].forEach(match => {
             const card = document.createElement('div');
             card.className = 'transition-shadow duration-300 bg-white shadow-lg card hover:shadow-xl';
@@ -309,8 +312,7 @@ async function loadResults(sport = 'all', eventType = 'all') {
     
     const matchesByRound = {};
     completedMatches.forEach(match => {
-        // Sử dụng giá trị round trực tiếp
-        const roundText = match.round;
+        const roundText = match.round; // Giá trị round do admin nhập
         if (!matchesByRound[roundText]) matchesByRound[roundText] = [];
         matchesByRound[roundText].push(match);
     });
@@ -321,20 +323,22 @@ async function loadResults(sport = 'all', eventType = 'all') {
     }
     noResultsElement.classList.add('hidden');
 
-    const sortedRounds = Object.keys(matchesByRound).sort();
+    // Sắp xếp các vòng theo thứ tự ưu tiên từ cao xuống thấp
+    const sortedRounds = Object.keys(matchesByRound).sort((a, b) => getRoundPriority(b) - getRoundPriority(a));
+    
     sortedRounds.forEach(round => {
         const roundSection = document.createElement('div');
         roundSection.className = 'mb-8';
         
         const roundTitle = document.createElement('h1');
         roundTitle.className = 'mb-4 text-2xl font-bold text-indigo-900';
-        roundTitle.textContent = round; // Hiển thị trực tiếp "Vòng bảng 1", "Bán kết", v.v.
+        roundTitle.textContent = round; // Hiển thị giá trị round do admin nhập
         roundSection.appendChild(roundTitle);
 
         const resultsList = document.createElement('div');
         resultsList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3';
         
-        matchesByRound[round].sort((a, b) => new Date(b.time) - new Date(a.time));
+        matchesByRound[round].sort((a, b) => new Date(b.time) - new Date(a.time)); // Sắp xếp theo thời gian từ mới đến cũ
         matchesByRound[round].forEach(match => {
             const card = document.createElement('div');
             card.className = 'transition-shadow duration-300 bg-white shadow-lg card hover:shadow-xl';
@@ -546,7 +550,7 @@ function updateEventTypes() {
 }
 function updateEventTypeFilter(sport) {
     const eventTypeFilter = document.getElementById('event-type-filter');
-    if (!eventTypeFilter) return;
+    if (!eventTypeFilter) return; // Nếu không tìm thấy phần tử, thoát hàm
 
     eventTypeFilter.innerHTML = '<option value="all">All Event Types</option>';
 
@@ -608,8 +612,9 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
     const round = document.getElementById('round').value.trim();
 
     // Validation cho round
-    if (!sport || !eventType || !team1 || !team2 || !time || !round) {
-        showToast('Please fill in all required fields correctly. Round must be one of: Vòng bảng 1, Vòng bảng 2, Bán kết, Vòng chung kết', 'warning');
+    const validRounds = ['Vòng bảng 1', 'Vòng bảng 2', 'Vòng 1/8', 'Tứ kết', 'Bán kết', 'Vòng chung kết'];
+    if (!sport || !eventType || !team1 || !team2 || !time || !round || !validRounds.includes(round)) {
+        showToast('Please fill in all required fields correctly. Round must be one of: Vòng bảng 1, Vòng bảng 2, Vòng 1/8, Tứ kết, Bán kết, Vòng chung kết', 'warning');
         return;
     }
 
@@ -706,7 +711,9 @@ async function loadAdminMatches(sport = 'all', eventType = 'all') {
     if (eventType !== 'all') {
         filteredMatches = filteredMatches.filter(match => match.eventType === eventType);
     }
-    filteredMatches.sort((a, b) => new Date(b.time) - new Date(a.time));
+    
+    // Sắp xếp theo thứ tự ưu tiên vòng từ cao xuống thấp, nếu cùng vòng thì sắp xếp theo thời gian
+    filteredMatches.sort((a, b) => getRoundPriority(b.round) - getRoundPriority(a.round) || new Date(b.time) - new Date(a.time));
 
     if (filteredMatches.length === 0) {
         noMatchesElement.classList.remove('hidden');
@@ -756,7 +763,7 @@ async function loadAdminMatches(sport = 'all', eventType = 'all') {
                         <p class="text-gray-600">${formatDate(match.time)}</p>
                         ${cardsDisplay}
                         <p class="text-gray-600">${venueDisplay}</p>
-                        <p class="text-gray-600">${match.round}</p> <!-- Hiển thị trực tiếp "Vòng bảng 1", "Bán kết", v.v. -->
+                        <p class="text-gray-600">${match.round}</p>
                     </div>
                     <p class="font-bold text-right text-red-800 text-xl">${resultDisplay}</p>
                 </div>
@@ -792,3 +799,16 @@ window.addEventListener('DOMContentLoaded', () => {
         updateEventTypeFilter('all');
     }
 });
+
+function getRoundPriority(round) {
+    const roundOrder = {
+        'Vòng chung kết': 10,
+        'Bán kết': 8,
+        'Tứ kết': 6,
+        'Vòng 1/8': 4,
+        'Vòng bảng 3': 3, 
+        'Vòng bảng 2': 1, 
+        'Vòng bảng 1': 0
+    };
+    return roundOrder[round] !== undefined ? roundOrder[round] : -1;
+}
