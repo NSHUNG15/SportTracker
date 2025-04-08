@@ -6,7 +6,7 @@
     <title>Admin Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.x/dist/full.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.x/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./../style.css">
 </head>
 <body class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200">
     <nav class="text-white bg-gray-800 shadow-lg" id="top-nav">
@@ -14,7 +14,7 @@
             <div class="flex items-center justify-between">
                 <h1 class="text-2xl font-bold">SportTracker Admin</h1>
                 <div class="flex hidden space-x-4" id="nav-links">
-                    <a href="index.html" class="btn btn-ghost btn-sm">Schedule</a>
+                    <a href="./../index.html" class="btn btn-ghost btn-sm">Schedule</a>
                     <a href="results.html" class="btn btn-ghost btn-sm">Results</a>
                     <button onclick="logout()" class="btn btn-error btn-sm">Logout</button>
                 </div>
@@ -137,6 +137,7 @@
                             <a class="tab" onclick="filterAdminMatches('Football')">Football</a>
                             <a class="tab" onclick="filterAdminMatches('Badminton')">Badminton</a>
                             <a class="tab" onclick="filterAdminMatches('Chess')">Chess</a>
+                            <a class="tab" onclick="filterAdminMatches('Athletics')">Athletics</a>
                         </div>
                         
                         <div class="overflow-y-auto max-h-200">
@@ -159,6 +160,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="./../be/script.js"></script>
 </body>
 </html>
