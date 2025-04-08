@@ -612,8 +612,7 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
     const round = document.getElementById('round').value.trim();
 
     // Validation cho round
-    const validRounds = ['Vòng bảng 1', 'Vòng bảng 2', 'Vòng 1/8', 'Tứ kết', 'Bán kết', 'Vòng chung kết'];
-    if (!sport || !eventType || !team1 || !team2 || !time || !round || !validRounds.includes(round)) {
+    if (!sport || !eventType || !team1 || !team2 || !time || !round ) {
         showToast('Please fill in all required fields correctly. Round must be one of: Vòng bảng 1, Vòng bảng 2, Vòng 1/8, Tứ kết, Bán kết, Vòng chung kết', 'warning');
         return;
     }
