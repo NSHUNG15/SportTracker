@@ -39,10 +39,15 @@
                     <a class="tab" onclick="filterMatches('Football')">Football</a>
                     <a class="tab" onclick="filterMatches('Badminton')">Badminton</a>
                     <a class="tab" onclick="filterMatches('Chess')">Chess</a>
+                    <a class="tab" onclick="filterMatches('Athletics')">Athletics</a>
                 </div>
             </div>
         </div>
- 
+        <div class="flex-1 max-w-md mb-5 ml-auto mr-0">
+            <select id="event-type-filter" class="w-full select select-bordered" onchange="filterMatches(getActiveTab(), this.value)">
+                <option value="all">All Event Types</option>
+            </select>
+        </div>
         <div id="rounds-container">
         <!-- Rounds và matches sẽ được hiển thị ở đây -->
         </div>
@@ -57,7 +62,7 @@
         </div>
     </div>
     
-    <footer class="p-6 mt-12 text-white bg-indigo-900">
+    <footer class="mt-12 text-white bg-indigo-900 ">
         <div class="container mx-auto text-center">
             <p>© 2025 SportTracker. All rights reserved.</p>
             <p>© Design and source code copyright: Nguyễn Sinh Hùng</p>
