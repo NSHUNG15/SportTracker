@@ -149,30 +149,25 @@ function showToast(message, type = 'info') {
     setTimeout(() => toast.remove(), 3000);
 }
 
-
 async function updateRoundOptions() {
     const data = await fetchMatches();
     const roundSelector = document.getElementById('round-selector');
 
     if (!roundSelector) return;
     
-    // Kiểm tra nếu không có dữ liệu
     if (!data.matches || data.matches.length === 0) {
-        roundSelector.innerHTML = '<option value="all">All Rounds</option>';
+        roundSelector.innerHTML = '<option value="all">Tất cả các vòng</option>';
         return;
     }
 
-    // Lấy danh sách các vòng đấu duy nhất
     const rounds = [...new Set(data.matches.map(match => match.round))].sort();
 
-    // Xóa các tùy chọn hiện tại
-    roundSelector.innerHTML = '<option value="all">All Rounds</option>';
+    roundSelector.innerHTML = '<option value="all">Tất cả các vòng</option>';
 
-    // Thêm các tùy chọn mới
     rounds.forEach(round => {
         const option = document.createElement('option');
-        option.value = round.replace('Round ', ''); // Chỉ lấy số vòng
-        option.textContent = round;
+        option.value = round; // Sử dụng giá trị round đầy đủ
+        option.textContent = round; // Hiển thị "Vòng bảng 1", "Bán kết", v.v.
         roundSelector.appendChild(option);
     });
 }
@@ -229,8 +224,10 @@ async function loadMatches(sport = 'all', eventType = 'all') {
     
     const matchesByRound = {};
     filteredMatches.forEach(match => {
-        if (!matchesByRound[match.round]) matchesByRound[match.round] = [];
-        matchesByRound[match.round].push(match);
+        // Sử dụng giá trị round trực tiếp từ dữ liệu
+        const roundText = match.round;
+        if (!matchesByRound[roundText]) matchesByRound[roundText] = [];
+        matchesByRound[roundText].push(match);
     });
 
     if (Object.keys(matchesByRound).length === 0) {
@@ -246,7 +243,7 @@ async function loadMatches(sport = 'all', eventType = 'all') {
         
         const roundTitle = document.createElement('h1');
         roundTitle.className = 'mb-4 text-2xl font-bold text-indigo-900';
-        roundTitle.textContent = round;
+        roundTitle.textContent = round; // Hiển thị trực tiếp "Vòng bảng 1", "Bán kết", v.v.
         roundSection.appendChild(roundTitle);
 
         const matchList = document.createElement('div');
@@ -288,7 +285,7 @@ async function loadMatches(sport = 'all', eventType = 'all') {
     });
 
     updateTabStyles(sport);
-    updateEventTypeFilter(sport); // Cập nhật dropdown eventType
+    updateEventTypeFilter(sport);
 }
 // Cập nhật loadResults để hiển thị sân và địa điểm
 async function loadResults(sport = 'all', eventType = 'all') {
@@ -312,8 +309,10 @@ async function loadResults(sport = 'all', eventType = 'all') {
     
     const matchesByRound = {};
     completedMatches.forEach(match => {
-        if (!matchesByRound[match.round]) matchesByRound[match.round] = [];
-        matchesByRound[match.round].push(match);
+        // Sử dụng giá trị round trực tiếp
+        const roundText = match.round;
+        if (!matchesByRound[roundText]) matchesByRound[roundText] = [];
+        matchesByRound[roundText].push(match);
     });
 
     if (Object.keys(matchesByRound).length === 0) {
@@ -329,7 +328,7 @@ async function loadResults(sport = 'all', eventType = 'all') {
         
         const roundTitle = document.createElement('h1');
         roundTitle.className = 'mb-4 text-2xl font-bold text-indigo-900';
-        roundTitle.textContent = round;
+        roundTitle.textContent = round; // Hiển thị trực tiếp "Vòng bảng 1", "Bán kết", v.v.
         roundSection.appendChild(roundTitle);
 
         const resultsList = document.createElement('div');
@@ -400,7 +399,7 @@ async function loadResults(sport = 'all', eventType = 'all') {
     });
 
     updateTabStyles(sport);
-    updateEventTypeFilter(sport); // Cập nhật dropdown eventType
+    updateEventTypeFilter(sport);
 }
 
 // Search functions
@@ -592,100 +591,100 @@ async function loadVenues() {
 
 // Cập nhật form submission
 document.getElementById('match-form')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const sport = document.getElementById('sport').value;
-  const eventType = document.getElementById('eventType').value;
-  const team1 = document.getElementById('team1').value.trim();
-  const team2 = document.getElementById('team2').value.trim();
-  const score = document.getElementById('score').value.trim();
-  const duration = document.getElementById('duration').value.trim();
-  const yellowCards1 = parseInt(document.getElementById('yellowCards1').value) || 0;
-  const yellowCards2 = parseInt(document.getElementById('yellowCards2').value) || 0;
-  const redCards1 = parseInt(document.getElementById('redCards1').value) || 0;
-  const redCards2 = parseInt(document.getElementById('redCards2').value) || 0;
-  const venue = document.getElementById('venue').value;
-  const time = document.getElementById('time').value;
-  const round = `Round ${document.getElementById('round').value.trim()}`;
+    const sport = document.getElementById('sport').value;
+    const eventType = document.getElementById('eventType').value;
+    const team1 = document.getElementById('team1').value.trim();
+    const team2 = document.getElementById('team2').value.trim();
+    const score = document.getElementById('score').value.trim();
+    const duration = document.getElementById('duration').value.trim();
+    const yellowCards1 = parseInt(document.getElementById('yellowCards1').value) || 0;
+    const yellowCards2 = parseInt(document.getElementById('yellowCards2').value) || 0;
+    const redCards1 = parseInt(document.getElementById('redCards1').value) || 0;
+    const redCards2 = parseInt(document.getElementById('redCards2').value) || 0;
+    const venue = document.getElementById('venue').value;
+    const time = document.getElementById('time').value;
+    const round = document.getElementById('round').value.trim();
 
-  if (!sport || !eventType || !team1 || !team2 || !time || isNaN(round.replace('Round ', ''))) {
-    showToast('Please fill in all required fields correctly', 'warning');
-    return;
-  }
-
-  const match = {
-    sport,
-    eventType,
-    team1,
-    team2,
-    score: sport === 'Athletics' ? '' : score,
-    duration: sport === 'Athletics' ? duration : '',
-    yellowCards: { team1: yellowCards1, team2: yellowCards2 },
-    redCards: { team1: redCards1, team2: redCards2 },
-    time: new Date(time).toISOString(),
-    round,
-    status: (sport === 'Athletics' ? duration : score) ? 'Completed' : 'Upcoming',
-    venue: venue || null
-  };
-
-  const matchId = document.getElementById('match-form').dataset.matchId;
-
-  try {
-    let response;
-    if (matchId) {
-      response = await fetch(`/match/${matchId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(match)
-      });
-    } else {
-      response = await fetch('/match', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(match)
-      });
+    // Validation cho round
+    if (!sport || !eventType || !team1 || !team2 || !time || !round) {
+        showToast('Please fill in all required fields correctly. Round must be one of: Vòng bảng 1, Vòng bảng 2, Bán kết, Vòng chung kết', 'warning');
+        return;
     }
 
-    const result = await response.json();
-    if (result.success) {
-      showToast(matchId ? 'Match updated successfully' : 'New match added successfully', 'success');
-      loadAdminMatches(getActiveTab());
-      document.getElementById('match-form').reset();
-      delete document.getElementById('match-form').dataset.matchId;
-    } else {
-      showToast(`Error: ${result.error || 'Failed to save match'}`, 'error');
+    const match = {
+        sport,
+        eventType,
+        team1,
+        team2,
+        score: sport === 'Athletics' ? '' : score,
+        duration: sport === 'Athletics' ? duration : '',
+        yellowCards: { team1: yellowCards1, team2: yellowCards2 },
+        redCards: { team1: redCards1, team2: redCards2 },
+        time: new Date(time).toISOString(),
+        round,
+        status: (sport === 'Athletics' ? duration : score) ? 'Completed' : 'Upcoming',
+        venue: venue || null
+    };
+
+    const matchId = document.getElementById('match-form').dataset.matchId;
+
+    try {
+        let response;
+        if (matchId) {
+            response = await fetch(`/match/${matchId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(match)
+            });
+        } else {
+            response = await fetch('/match', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(match)
+            });
+        }
+
+        const result = await response.json();
+        if (result.success) {
+            showToast(matchId ? 'Match updated successfully' : 'New match added successfully', 'success');
+            loadAdminMatches(getActiveTab());
+            document.getElementById('match-form').reset();
+            delete document.getElementById('match-form').dataset.matchId;
+        } else {
+            showToast(`Error: ${result.error || 'Failed to save match'}`, 'error');
+        }
+    } catch (error) {
+        console.error('Error saving match:', error);
+        showToast(`Error saving match: ${error.message}`, 'error');
     }
-  } catch (error) {
-    console.error('Error saving match:', error);
-    showToast(`Error saving match: ${error.message}`, 'error');
-  }
 });
-
 // Cập nhật editMatch để điền dữ liệu mới
 function editMatch(matchId) {
-  fetch(`/match/${matchId}`)
-    .then(response => response.json())
-    .then(match => {
-      document.getElementById('sport').value = match.sport;
-      updateEventTypes();
-      document.getElementById('eventType').value = match.eventType;
-      document.getElementById('team1').value = match.team1;
-      document.getElementById('team2').value = match.team2;
-      document.getElementById('score').value = match.score || '';
-      document.getElementById('duration').value = match.duration || '';
-      document.getElementById('yellowCards1').value = match.yellowCards.team1;
-      document.getElementById('yellowCards2').value = match.yellowCards.team2;
-      document.getElementById('redCards1').value = match.redCards.team1;
-      document.getElementById('redCards2').value = match.redCards.team2;
-      document.getElementById('venue').value = match.venue?._id || '';
-      document.getElementById('time').value = match.time ? new Date(match.time).toISOString().slice(0, 16) : '';
-      document.getElementById('round').value = match.round.replace('Round ', '');
-      document.getElementById('match-form').dataset.matchId = match._id;
-    })
-    .catch(error => {
-      console.error('Error fetching match:', error);
-      showToast(`Error: ${error.message}`, 'error');
-    });
+    fetch(`/match/${matchId}`)
+        .then(response => response.json())
+        .then(match => {
+            document.getElementById('sport').value = match.sport;
+            updateEventTypes();
+            document.getElementById('eventType').value = match.eventType;
+            document.getElementById('team1').value = match.team1;
+            document.getElementById('team2').value = match.team2;
+            document.getElementById('score').value = match.score || '';
+            document.getElementById('duration').value = match.duration || '';
+            document.getElementById('yellowCards1').value = match.yellowCards.team1;
+            document.getElementById('yellowCards2').value = match.yellowCards.team2;
+            document.getElementById('redCards1').value = match.redCards.team1;
+            document.getElementById('redCards2').value = match.redCards.team2;
+            document.getElementById('venue').value = match.venue?._id || '';
+            document.getElementById('time').value = match.time ? new Date(match.time).toISOString().slice(0, 16) : '';
+            document.getElementById('round').value = match.round; // Hiển thị giá trị round đầy đủ
+            document.getElementById('match-form').dataset.matchId = match._id;
+        })
+        .catch(error => {
+            console.error('Error fetching match:', error);
+            showToast(`Error: ${error.message}`, 'error');
+        });
 }
 
 // Cập nhật loadAdminMatches để hiển thị sân và địa điểm
@@ -725,7 +724,7 @@ async function loadAdminMatches(sport = 'all', eventType = 'all') {
         
         const resultDisplay = match.sport === 'Athletics' ? 
             (match.duration ? `<span class="font-bold">${match.duration}</span>` : '<span class="badge badge-outline">Upcoming</span>') : 
-            (match.score ? `<span class="font-bold ">${match.score}</span>` : '<span class="badge badge-outline">Upcoming</span>');
+            (match.score ? `<span class="font-bold">${match.score}</span>` : '<span class="badge badge-outline">Upcoming</span>');
         
         const cardsDisplay = match.sport === 'Football' ? `
             <p class="text-sm">Yellow: ${match.yellowCards.team1}-${match.yellowCards.team2}</p>
@@ -757,6 +756,7 @@ async function loadAdminMatches(sport = 'all', eventType = 'all') {
                         <p class="text-gray-600">${formatDate(match.time)}</p>
                         ${cardsDisplay}
                         <p class="text-gray-600">${venueDisplay}</p>
+                        <p class="text-gray-600">${match.round}</p> <!-- Hiển thị trực tiếp "Vòng bảng 1", "Bán kết", v.v. -->
                     </div>
                     <p class="font-bold text-right text-red-800 text-xl">${resultDisplay}</p>
                 </div>
