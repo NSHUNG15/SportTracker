@@ -1,4 +1,4 @@
-// Common functions
+// API Communication Functions
 async function fetchMatches() {
     try {
         // Use relative URL instead of hardcoded localhost URL
@@ -25,6 +25,48 @@ async function saveMatches(matches) {
     }
 }
 
+// Updated delete match function
+function deleteMatch(matchId) {
+    if (confirm('Are you sure you want to delete this match?')) {
+        fetch(`/match/${matchId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                loadAdminMatches(getActiveTab());
+                showToast('Match deleted successfully', 'success');
+            } else {
+                showToast('Error deleting match', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error deleting match', 'error');
+        });
+    }
+}
+
+// Hàm tải danh sách địa điểm
+async function loadVenues() {
+  try {
+    const response = await fetch('/venues');
+    const data = await response.json();
+    const venueSelect = document.getElementById('venue');
+    venueSelect.innerHTML = '<option value="">Select a venue</option>';
+    
+    data.venues.forEach(venue => {
+      const option = document.createElement('option');
+      option.value = venue._id;
+      option.textContent = `${venue.name} - ${venue.location}`;
+      venueSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Error loading venues:', error);
+    showToast('Error loading venues', 'error');
+  }
+}
+ ////////////////////////////////////////////////////////////
 // Keep other utility functions the same
 function formatDate(dateString) {
     const options = { 
@@ -67,28 +109,62 @@ function formatTime(date) {
     return date.toLocaleTimeString(undefined, options);
 }
 
-// Updated delete match function
-function deleteMatch(matchId) {
-    if (confirm('Are you sure you want to delete this match?')) {
-        fetch(`/match/${matchId}`, {
-            method: 'DELETE'
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                loadAdminMatches(getActiveTab());
-                showToast('Match deleted successfully', 'success');
-            } else {
-                showToast('Error deleting match', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('Error deleting match', 'error');
-        });
-    }
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = 'toast toast-top toast-center';
+    toast.innerHTML = `
+        <div class="alert alert-${type}">
+            <span>${message}</span>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 }
 
+// Get currently active tab filter
+function getActiveTab() {
+    const activeTab = document.querySelector('.tab.tab-active');
+    if (!activeTab) return 'all';
+    
+    const text = activeTab.textContent.toLowerCase();
+    if (text === 'football') return 'Football';
+    if (text === 'badminton') return 'Badminton';
+    if (text === 'chess') return 'Chess';
+    if (text === 'athletics') return 'Athletics';
+    return 'all';
+}
+
+// Helper function to update tab styles
+function updateTabStyles(activeFilter) {
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(tab => {
+        tab.classList.remove('tab-active');
+        const tabText = tab.textContent.toLowerCase();
+        const filterText = activeFilter.toLowerCase();
+        
+        if ((tabText === 'all' && filterText === 'all') || 
+            (tabText === 'football' && filterText === 'football') ||
+            (tabText === 'badminton' && filterText === 'badminton') || 
+            (tabText === 'chess' && filterText === 'chess') ||
+            (tabText === 'athletics' && filterText === 'athletics')) {
+            tab.classList.add('tab-active');
+        }
+    });
+}
+
+function getRoundPriority(round) {
+    const roundOrder = {
+        'Vòng chung kết': 10,
+        'Bán kết': 8,
+        'Tứ kết': 6,
+        'Vòng 1/8': 4,
+        'Vòng bảng 3': 3, 
+        'Vòng bảng 2': 1, 
+        'Vòng bảng 1': 0
+    };
+    return roundOrder[round] !== undefined ? roundOrder[round] : -1;
+}
+/////////////////////////////////////////////////////////////
 // Keep other utility functions
 function filterAdminMatches(sport) {
     loadAdminMatches(sport);
@@ -137,17 +213,7 @@ function performSearch(listId, searchTerm) {
     }
 }
 
-function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.className = 'toast toast-top toast-center';
-    toast.innerHTML = `
-        <div class="alert alert-${type}">
-            <span>${message}</span>
-        </div>
-    `;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-}
+
 
 async function updateRoundOptions() {
     const data = await fetchMatches();
@@ -478,36 +544,8 @@ function filterResults(sport, eventType = 'all') {
     loadResults(sport, eventType);
 }
 
-// Helper function to update tab styles
-function updateTabStyles(activeFilter) {
-    const tabs = document.querySelectorAll('.tab');
-    tabs.forEach(tab => {
-        tab.classList.remove('tab-active');
-        const tabText = tab.textContent.toLowerCase();
-        const filterText = activeFilter.toLowerCase();
-        
-        if ((tabText === 'all' && filterText === 'all') || 
-            (tabText === 'football' && filterText === 'football') ||
-            (tabText === 'badminton' && filterText === 'badminton') || 
-            (tabText === 'chess' && filterText === 'chess') ||
-            (tabText === 'athletics' && filterText === 'athletics')) {
-            tab.classList.add('tab-active');
-        }
-    });
-}
 
-// Get currently active tab filter
-function getActiveTab() {
-    const activeTab = document.querySelector('.tab.tab-active');
-    if (!activeTab) return 'all';
-    
-    const text = activeTab.textContent.toLowerCase();
-    if (text === 'football') return 'Football';
-    if (text === 'badminton') return 'Badminton';
-    if (text === 'chess') return 'Chess';
-    if (text === 'athletics') return 'Athletics';
-    return 'all';
-}
+
 
 // Danh sách hình thức thi đấu theo môn thể thao
 const eventTypes = {
@@ -573,25 +611,7 @@ function updateEventTypeFilter(sport) {
     }
 }
 
-// Hàm tải danh sách địa điểm
-async function loadVenues() {
-  try {
-    const response = await fetch('/venues');
-    const data = await response.json();
-    const venueSelect = document.getElementById('venue');
-    venueSelect.innerHTML = '<option value="">Select a venue</option>';
-    
-    data.venues.forEach(venue => {
-      const option = document.createElement('option');
-      option.value = venue._id;
-      option.textContent = `${venue.name} - ${venue.location}`;
-      venueSelect.appendChild(option);
-    });
-  } catch (error) {
-    console.error('Error loading venues:', error);
-    showToast('Error loading venues', 'error');
-  }
-}
+
 
 // Cập nhật form submission
 document.getElementById('match-form')?.addEventListener('submit', async (e) => {
@@ -799,15 +819,3 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function getRoundPriority(round) {
-    const roundOrder = {
-        'Vòng chung kết': 10,
-        'Bán kết': 8,
-        'Tứ kết': 6,
-        'Vòng 1/8': 4,
-        'Vòng bảng 3': 3, 
-        'Vòng bảng 2': 1, 
-        'Vòng bảng 1': 0
-    };
-    return roundOrder[round] !== undefined ? roundOrder[round] : -1;
-}
