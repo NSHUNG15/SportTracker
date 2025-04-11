@@ -13,7 +13,6 @@ mongoose.connect(mongoURI)
 // Schema cho địa điểm thi đấu
 const venueSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  location: { type: String, required: true },
   sport: { type: String, enum: ['Football', 'Athletics', 'Chess', 'Badminton'], required: true }
 });
 

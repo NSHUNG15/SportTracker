@@ -1,7 +1,15 @@
+// Định nghĩa địa điểm cho từng môn thể thao
+const locations = {
+    all: "",
+    Football: "Sân bóng đá Làng Hòa Mỹ - K120 Nguyễn Huy Tưởng, Hòa An, Liên Chiểu, Đà Nẵng.",
+    Badminton: "Sân cầu lông Win Win Badminton – 642 Tôn Đức Thắng, Hòa Khánh Nam, Liên Chiểu, Đà Nẵng.",
+    Chess: "ANGEL COFFEE số 87-Quang Trung, Hải Châu, Đà Nẵng.",
+    Athletics: "Sân vận động Thanh Khê – Đinh Núp, Thanh Khê Đông, Thanh Khê, Đà Nẵng."
+};
+
 // API Communication Functions
 async function fetchMatches() {
     try {
-        // Use relative URL instead of hardcoded localhost URL
         const response = await fetch('/matches');
         return await response.json();
     } catch (error) {
@@ -12,7 +20,6 @@ async function fetchMatches() {
 
 async function saveMatches(matches) {
     try {
-        // Use relative URL instead of hardcoded localhost URL
         const response = await fetch('/matches', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -25,7 +32,6 @@ async function saveMatches(matches) {
     }
 }
 
-// Updated delete match function
 function deleteMatch(matchId) {
     if (confirm('Are you sure you want to delete this match?')) {
         fetch(`/match/${matchId}`, {
@@ -47,27 +53,26 @@ function deleteMatch(matchId) {
     }
 }
 
-// Hàm tải danh sách địa điểm
 async function loadVenues() {
-  try {
-    const response = await fetch('/venues');
-    const data = await response.json();
-    const venueSelect = document.getElementById('venue');
-    venueSelect.innerHTML = '<option value="">Select a venue</option>';
-    
-    data.venues.forEach(venue => {
-      const option = document.createElement('option');
-      option.value = venue._id;
-      option.textContent = `${venue.name} - ${venue.location}`;
-      venueSelect.appendChild(option);
-    });
-  } catch (error) {
-    console.error('Error loading venues:', error);
-    showToast('Error loading venues', 'error');
-  }
+    try {
+        const response = await fetch('/venues');
+        const data = await response.json();
+        const venueSelect = document.getElementById('venue');
+        venueSelect.innerHTML = '<option value="">Select a venue</option>';
+        
+        data.venues.forEach(venue => {
+            const option = document.createElement('option');
+            option.value = venue._id;
+            option.textContent = `${venue.name}`;
+            venueSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading venues:', error);
+        showToast('Error loading venues', 'error');
+    }
 }
- ////////////////////////////////////////////////////////////
-// Keep other utility functions the same
+
+// Utility Functions
 function formatDate(dateString) {
     const options = { 
         weekday: 'short', 
@@ -87,18 +92,13 @@ function getScoreDisplay(score) {
 
 function getSportIcon(sport) {
     switch(sport.toLowerCase()) {
-        case 'football':
-            return '⚽';
-        case 'badminton':
-            return '🏸';
-        case 'chess':
-            return '♟️';
-        default:
-            return '🎮';
+        case 'football': return '⚽';
+        case 'badminton': return '🏸';
+        case 'chess': return '♟️';
+        default: return '🎮';
     }
 }
 
-// Keep other helper functions the same
 function formatDateShort(date) {
     const options = { month: 'short', day: 'numeric' };
     return date.toLocaleDateString(undefined, options);
@@ -121,7 +121,6 @@ function showToast(message, type = 'info') {
     setTimeout(() => toast.remove(), 3000);
 }
 
-// Get currently active tab filter
 function getActiveTab() {
     const activeTab = document.querySelector('.tab.tab-active');
     if (!activeTab) return 'all';
@@ -134,7 +133,6 @@ function getActiveTab() {
     return 'all';
 }
 
-// Helper function to update tab styles
 function updateTabStyles(activeFilter) {
     const tabs = document.querySelectorAll('.tab');
     tabs.forEach(tab => {
@@ -164,8 +162,7 @@ function getRoundPriority(round) {
     };
     return roundOrder[round] !== undefined ? roundOrder[round] : -1;
 }
-/////////////////////////////////////////////////////////////
-// Keep other utility functions
+
 function filterAdminMatches(sport) {
     loadAdminMatches(sport);
 }
@@ -199,7 +196,6 @@ function performSearch(listId, searchTerm) {
         }
     }
     
-    // Show/hide no results message
     const noResultsId = listId === 'match-list' ? 'no-matches' : 
                         listId === 'results-list' ? 'no-results' : 'no-admin-matches';
     const noResultsElement = document.getElementById(noResultsId);
@@ -213,12 +209,9 @@ function performSearch(listId, searchTerm) {
     }
 }
 
-
-
 async function updateRoundOptions() {
     const data = await fetchMatches();
     const roundSelector = document.getElementById('round-selector');
-
     if (!roundSelector) return;
     
     if (!data.matches || data.matches.length === 0) {
@@ -227,18 +220,16 @@ async function updateRoundOptions() {
     }
 
     const rounds = [...new Set(data.matches.map(match => match.round))].sort();
-
     roundSelector.innerHTML = '<option value="all">Tất cả các vòng</option>';
 
     rounds.forEach(round => {
         const option = document.createElement('option');
-        option.value = round; // Sử dụng giá trị round đầy đủ
-        option.textContent = round; // Hiển thị "Vòng bảng 1", "Bán kết", v.v.
+        option.value = round;
+        option.textContent = round;
         roundSelector.appendChild(option);
     });
 }
 
-// Fix login/logout functions (keep as they are)
 function login() {
     const password = document.getElementById('admin-password')?.value;
     if (password === 'bansukien2025!@#') {
@@ -249,7 +240,6 @@ function login() {
             updateEventTypeFilter('all'); 
         });
     } else {
-        // Show error toast
         const toast = document.createElement('div');
         toast.className = 'toast toast-top toast-center';
         toast.innerHTML = `
@@ -269,8 +259,6 @@ function logout() {
     document.getElementById('admin-password').value = '';
 }
 
-
-// Cập nhật loadMatches để hiển thị sân và địa điểm
 async function loadMatches(sport = 'all', eventType = 'all') {
     const data = await fetchMatches();
     const roundsContainer = document.getElementById('rounds-container');
@@ -292,7 +280,7 @@ async function loadMatches(sport = 'all', eventType = 'all') {
     
     const matchesByRound = {};
     filteredMatches.forEach(match => {
-        const roundText = match.round; // Giá trị round do admin nhập
+        const roundText = match.round;
         if (!matchesByRound[roundText]) matchesByRound[roundText] = [];
         matchesByRound[roundText].push(match);
     });
@@ -303,7 +291,6 @@ async function loadMatches(sport = 'all', eventType = 'all') {
     }
     noMatchesElement.classList.add('hidden');
 
-    // Sắp xếp các vòng theo thứ tự ưu tiên từ cao xuống thấp
     const sortedRounds = Object.keys(matchesByRound).sort((a, b) => getRoundPriority(b) - getRoundPriority(a));
     
     sortedRounds.forEach(round => {
@@ -312,13 +299,13 @@ async function loadMatches(sport = 'all', eventType = 'all') {
         
         const roundTitle = document.createElement('h1');
         roundTitle.className = 'mb-4 text-2xl font-bold text-indigo-900';
-        roundTitle.textContent = round; // Hiển thị giá trị round do admin nhập
+        roundTitle.textContent = round;
         roundSection.appendChild(roundTitle);
 
         const matchList = document.createElement('div');
         matchList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3';
         
-        matchesByRound[round].sort((a, b) => new Date(a.time) - new Date(b.time)); // Sắp xếp trận trong vòng theo thời gian
+        matchesByRound[round].sort((a, b) => new Date(a.time) - new Date(b.time));
         matchesByRound[round].forEach(match => {
             const card = document.createElement('div');
             card.className = 'transition-shadow duration-300 bg-white shadow-lg card hover:shadow-xl';
@@ -328,7 +315,7 @@ async function loadMatches(sport = 'all', eventType = 'all') {
             const statusClass = isToday ? 'badge-secondary' : 'badge-primary';
             const statusText = isToday ? 'Today' : formatDateShort(matchTime);
             
-            const venueDisplay = match.venue ? `${match.venue.name} - ${match.venue.location}` : 'TBD';
+            const venueDisplay = match.venue ? `${match.venue.name}` : 'TBD';
             
             card.innerHTML = `
                 <div class="card-body p-6">
@@ -356,7 +343,7 @@ async function loadMatches(sport = 'all', eventType = 'all') {
     updateTabStyles(sport);
     updateEventTypeFilter(sport);
 }
-// Cập nhật loadResults để hiển thị sân và địa điểm
+
 async function loadResults(sport = 'all', eventType = 'all') {
     const data = await fetchMatches();
     const roundsContainer = document.getElementById('results-container');
@@ -378,7 +365,7 @@ async function loadResults(sport = 'all', eventType = 'all') {
     
     const matchesByRound = {};
     completedMatches.forEach(match => {
-        const roundText = match.round; // Giá trị round do admin nhập
+        const roundText = match.round;
         if (!matchesByRound[roundText]) matchesByRound[roundText] = [];
         matchesByRound[roundText].push(match);
     });
@@ -389,7 +376,6 @@ async function loadResults(sport = 'all', eventType = 'all') {
     }
     noResultsElement.classList.add('hidden');
 
-    // Sắp xếp các vòng theo thứ tự ưu tiên từ cao xuống thấp
     const sortedRounds = Object.keys(matchesByRound).sort((a, b) => getRoundPriority(b) - getRoundPriority(a));
     
     sortedRounds.forEach(round => {
@@ -398,13 +384,13 @@ async function loadResults(sport = 'all', eventType = 'all') {
         
         const roundTitle = document.createElement('h1');
         roundTitle.className = 'mb-4 text-2xl font-bold text-indigo-900';
-        roundTitle.textContent = round; // Hiển thị giá trị round do admin nhập
+        roundTitle.textContent = round;
         roundSection.appendChild(roundTitle);
 
         const resultsList = document.createElement('div');
         resultsList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3';
         
-        matchesByRound[round].sort((a, b) => new Date(b.time) - new Date(a.time)); // Sắp xếp theo thời gian từ mới đến cũ
+        matchesByRound[round].sort((a, b) => new Date(b.time) - new Date(a.time));
         matchesByRound[round].forEach(match => {
             const card = document.createElement('div');
             card.className = 'transition-shadow duration-300 bg-white shadow-lg card hover:shadow-xl';
@@ -436,7 +422,7 @@ async function loadResults(sport = 'all', eventType = 'all') {
                 <p class="text-sm">Red: ${match.redCards.team1}-${match.redCards.team2}</p>
             ` : '';
             
-            const venueDisplay = match.venue ? `${match.venue.name} - ${match.venue.location}` : 'TBD';
+            const venueDisplay = match.venue ? `${match.venue.name}` : 'TBD';
             
             card.innerHTML = `
                 <div class="card-body p-6 relative">
@@ -472,7 +458,6 @@ async function loadResults(sport = 'all', eventType = 'all') {
     updateEventTypeFilter(sport);
 }
 
-// Search functions
 function searchMatches() {
     const searchTerm = document.getElementById('search-matches')?.value.toLowerCase();
     if (!searchTerm) {
@@ -486,7 +471,6 @@ function searchMatches() {
     const cards = roundsContainer.getElementsByClassName('card');
     let foundAny = false;
     
-    // Hide/show matches based on search term
     for (let card of cards) {
         const text = card.textContent.toLowerCase();
         if (text.includes(searchTerm)) {
@@ -497,7 +481,6 @@ function searchMatches() {
         }
     }
     
-    // Show/hide no matches message
     const noMatchesElement = document.getElementById('no-matches');
     if (noMatchesElement) {
         noMatchesElement.classList.toggle('hidden', foundAny);
@@ -517,7 +500,6 @@ function searchResults() {
     const cards = resultsContainer.getElementsByClassName('card');
     let foundAny = false;
     
-    // Hide/show results based on search term
     for (let card of cards) {
         const text = card.textContent.toLowerCase();
         if (text.includes(searchTerm)) {
@@ -528,72 +510,86 @@ function searchResults() {
         }
     }
     
-    // Show/hide no results message
     const noResultsElement = document.getElementById('no-results');
     if (noResultsElement) {
         noResultsElement.classList.toggle('hidden', foundAny);
     }
 }
 
-// Filter functions
+// Updated Filter Functions
 function filterMatches(sport, eventType = 'all') {
+    // Cập nhật địa điểm
+    const locationElement = document.getElementById('location');
+    if (locationElement) {
+        locationElement.textContent = locations[sport] || "Select a sport to view location";
+    }
+
+    // Quản lý trạng thái tab active
+    updateTabStyles(sport);
+
+    // Tải danh sách trận đấu
     loadMatches(sport, eventType);
 }
 
 function filterResults(sport, eventType = 'all') {
+    // Cập nhật địa điểm
+    const locationElement = document.getElementById('location');
+    if (locationElement) {
+        locationElement.textContent = locations[sport] || "Select a sport to view location";
+    }
+
+    // Quản lý trạng thái tab active
+    updateTabStyles(sport);
+
+    // Tải danh sách kết quả
     loadResults(sport, eventType);
 }
 
-
-
-
-// Danh sách hình thức thi đấu theo môn thể thao
+// Event Types
 const eventTypes = {
-  Football: ['Đội nam'],
-  Badminton: ['Đơn nam', 'Đơn nữ'],
-  Athletics: ['Chạy nhanh nam', 'Chạy bền nam 1500m', 'Chạy bền nữ 800m'],
-  Chess: ['Cờ vua', 'Cờ tướng']
+    Football: ['Đội nam'],
+    Badminton: ['Đơn nam', 'Đơn nữ'],
+    Athletics: ['Chạy nhanh nam', 'Chạy bền nam 1500m', 'Chạy bền nữ 800m'],
+    Chess: ['Cờ vua', 'Cờ tướng']
 };
 
-// Hàm cập nhật dropdown eventType
 function updateEventTypes() {
-  const sport = document.getElementById('sport').value;
-  const eventTypeSelect = document.getElementById('eventType');
-  eventTypeSelect.innerHTML = '';
-  
-  eventTypes[sport].forEach(type => {
-    const option = document.createElement('option');
-    option.value = type;
-    option.textContent = type;
-    eventTypeSelect.appendChild(option);
-  });
+    const sport = document.getElementById('sport').value;
+    const eventTypeSelect = document.getElementById('eventType');
+    eventTypeSelect.innerHTML = '';
+    
+    eventTypes[sport].forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = type;
+        eventTypeSelect.appendChild(option);
+    });
 
-  // Ẩn/hiện trường score hoặc duration
-  const scoreField = document.getElementById('score-field');
-  const durationField = document.getElementById('duration-field');
-  const cardsField = document.getElementById('cards-field');
-  if (sport === 'Athletics') {
-    scoreField.classList.add('hidden');
-    durationField.classList.remove('hidden');
-    cardsField.classList.add('hidden');
-  } else if (sport === 'Football') {
-    scoreField.classList.remove('hidden');
-    durationField.classList.add('hidden');
-    cardsField.classList.remove('hidden');
-  } else {
-    scoreField.classList.remove('hidden');
-    durationField.classList.add('hidden');
-    cardsField.classList.add('hidden');
-  }
+    const scoreField = document.getElementById('score-field');
+    const durationField = document.getElementById('duration-field');
+    const cardsField = document.getElementById('cards-field');
+    if (sport === 'Athletics') {
+        scoreField.classList.add('hidden');
+        durationField.classList.remove('hidden');
+        cardsField.classList.add('hidden');
+    } else if (sport === 'Football') {
+        scoreField.classList.remove('hidden');
+        durationField.classList.add('hidden');
+        cardsField.classList.remove('hidden');
+    } else {
+        scoreField.classList.remove('hidden');
+        durationField.classList.add('hidden');
+        cardsField.classList.add('hidden');
+    }
 }
+
 function updateEventTypeFilter(sport) {
     const eventTypeFilter = document.getElementById('event-type-filter');
-    if (!eventTypeFilter) return; // Nếu không tìm thấy phần tử, thoát hàm
+    if (!eventTypeFilter) return;
 
     eventTypeFilter.innerHTML = '<option value="all">All Event Types</option>';
 
     if (sport === 'all') {
-        // Hiển thị tất cả eventType từ tất cả môn thể thao
         Object.values(eventTypes).flat().forEach(type => {
             const option = document.createElement('option');
             option.value = type;
@@ -601,7 +597,6 @@ function updateEventTypeFilter(sport) {
             eventTypeFilter.appendChild(option);
         });
     } else {
-        // Chỉ hiển thị eventType của môn thể thao được chọn
         eventTypes[sport]?.forEach(type => {
             const option = document.createElement('option');
             option.value = type;
@@ -611,9 +606,6 @@ function updateEventTypeFilter(sport) {
     }
 }
 
-
-
-// Cập nhật form submission
 document.getElementById('match-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -631,8 +623,7 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
     const time = document.getElementById('time').value;
     const round = document.getElementById('round').value.trim();
 
-    // Validation cho round
-    if (!sport || !eventType || !team1 || !team2 || !time || !round ) {
+    if (!sport || !eventType || !team1 || !team2 || !time || !round) {
         showToast('Please fill in all required fields correctly. Round must be one of: Vòng bảng 1, Vòng bảng 2, Vòng 1/8, Tứ kết, Bán kết, Vòng chung kết', 'warning');
         return;
     }
@@ -684,7 +675,7 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
         showToast(`Error saving match: ${error.message}`, 'error');
     }
 });
-// Cập nhật editMatch để điền dữ liệu mới
+
 function editMatch(matchId) {
     fetch(`/match/${matchId}`)
         .then(response => response.json())
@@ -702,7 +693,7 @@ function editMatch(matchId) {
             document.getElementById('redCards2').value = match.redCards.team2;
             document.getElementById('venue').value = match.venue?._id || '';
             document.getElementById('time').value = match.time ? new Date(match.time).toISOString().slice(0, 16) : '';
-            document.getElementById('round').value = match.round; // Hiển thị giá trị round đầy đủ
+            document.getElementById('round').value = match.round;
             document.getElementById('match-form').dataset.matchId = match._id;
         })
         .catch(error => {
@@ -711,7 +702,6 @@ function editMatch(matchId) {
         });
 }
 
-// Cập nhật loadAdminMatches để hiển thị sân và địa điểm
 async function loadAdminMatches(sport = 'all', eventType = 'all') {
     const data = await fetchMatches();
     const matchList = document.getElementById('admin-match-list');
@@ -731,7 +721,6 @@ async function loadAdminMatches(sport = 'all', eventType = 'all') {
         filteredMatches = filteredMatches.filter(match => match.eventType === eventType);
     }
     
-    // Sắp xếp theo thứ tự ưu tiên vòng từ cao xuống thấp, nếu cùng vòng thì sắp xếp theo thời gian
     filteredMatches.sort((a, b) => getRoundPriority(b.round) - getRoundPriority(a.round) || new Date(b.time) - new Date(a.time));
 
     if (filteredMatches.length === 0) {
@@ -758,7 +747,7 @@ async function loadAdminMatches(sport = 'all', eventType = 'all') {
         ` : '';
         
         const venueDisplay = match.venue ? 
-            `${match.venue.name} - ${match.venue.location}` : 
+            `${match.venue.name}` : 
             'No venue assigned';
         
         card.innerHTML = `
@@ -796,26 +785,20 @@ async function loadAdminMatches(sport = 'all', eventType = 'all') {
 }
 
 // Khởi tạo khi tải trang
-// Trong phần khởi tạo
 window.addEventListener('DOMContentLoaded', () => {
     console.log("DOM loaded, initializing app...");
     
-    // Nếu trang hiện tại là trang admin (có login form), gọi loadVenues
     if (document.getElementById('login-form')) {
         console.log("Loading venues for admin page");
-        loadVenues(); // Gọi hàm loadVenues để tải danh sách địa điểm
+        loadVenues();
     }
 
-    // Các phần khởi tạo khác
     if (document.getElementById('rounds-container') && document.querySelector('h1.text-4xl').textContent.includes('Schedule')) {
         console.log("Loading matches for schedule page");
-        loadMatches();
-        updateEventTypeFilter('all');
+        filterMatches('all');
     } else if (document.getElementById('results-container') || 
-              (document.getElementById('rounds-container') && document.querySelector('h1.text-4xl').textContent.includes('Results'))) {
+               (document.getElementById('rounds-container') && document.querySelector('h1.text-4xl').textContent.includes('Results'))) {
         console.log("Loading results page");
-        loadResults();
-        updateEventTypeFilter('all');
+        filterResults('all');
     }
 });
-
