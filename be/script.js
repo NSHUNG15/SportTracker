@@ -241,7 +241,7 @@ async function updateRoundOptions() {
 // Fix login/logout functions (keep as they are)
 function login() {
     const password = document.getElementById('admin-password')?.value;
-    if (password === 'admin123') {
+    if (password === 'bansukien2025!@#') {
         document.getElementById('login-form')?.classList.add('hidden');
         document.getElementById('admin-controls')?.classList.remove('hidden');
         document.getElementById('nav-links')?.classList.remove('hidden');
