@@ -320,15 +320,15 @@ async function loadMatches(sport = 'all', eventType = 'all') {
             card.innerHTML = `
                 <div class="card-body p-6">
                     <div class="flex justify-between items-center mb-3">
-                        <span class="badge ${statusClass}">${statusText}</span>
+                        <span class="badge text-lg ${statusClass}">${statusText}</span>
                         <span class="text-2xl" title="${match.sport}">${getSportIcon(match.sport)}</span>
                     </div>
-                    <h2 class="card-title text-lg">${match.team1} vs ${match.team2}</h2>
-                    <p class="text-sm text-gray-600">${match.eventType}</p>
+                    <h2 class="card-title text-xl">${match.team1} vs ${match.team2}</h2>
+                    <p class="text-lg text-gray-800">${match.eventType}</p>
                     <div class="flex justify-between items-center mt-4">
                         <div>
-                            <p class="text-sm font-medium text-gray-600">${formatTime(matchTime)}</p>
-                            <p class="text-sm text-gray-500">${venueDisplay}</p>
+                            <p class="text-lg font-medium text-gray-800">${formatTime(matchTime)}</p>
+                            <p class="text-lg text-gray-800">${venueDisplay}</p>
                         </div>
                     </div>
                 </div>
@@ -404,22 +404,22 @@ async function loadResults(sport = 'all', eventType = 'all') {
                 const scores = match.score.split('-').map(s => parseInt(s.trim()));
                 if (scores[0] > scores[1]) {
                     resultBadge = `<div class="absolute top-0 right-0 m-2">
-                        <span class="badge badge-success p-3">${match.team1} won</span>
+                        <span class="badge badge-success text-lg p-3">${match.team1} won</span>
                     </div>`;
                 } else if (scores[0] < scores[1]) {
                     resultBadge = `<div class="absolute top-0 right-0 m-2">
-                        <span class="badge badge-success p-3">${match.team2} won</span>
+                        <span class="badge badge-success p-3 text-lg">${match.team2} won</span>
                     </div>`;
                 } else {
                     resultBadge = `<div class="absolute top-0 right-0 m-2">
-                        <span class="badge badge-info p-3">Draw</span>
+                        <span class="badge badge-info text-lg p-3">Draw</span>
                     </div>`;
                 }
             }
 
             const cardsDisplay = match.sport === 'Football' ? `
-                <p class="text-sm">Yellow: ${match.yellowCards.team1}-${match.yellowCards.team2}</p>
-                <p class="text-sm">Red: ${match.redCards.team1}-${match.redCards.team2}</p>
+                <p class="text-lg">Yellow: ${match.yellowCards.team1}-${match.yellowCards.team2}</p>
+                <p class="text-lg">Red: ${match.redCards.team1}-${match.redCards.team2}</p>
             ` : '';
             
             const venueDisplay = match.venue ? `${match.venue.name}` : 'TBD';
@@ -428,23 +428,23 @@ async function loadResults(sport = 'all', eventType = 'all') {
                 <div class="card-body p-6 relative">
                     ${resultBadge}
                     <div class="flex justify-between items-center mb-3 mt-5">
-                        <span class="badge badge-outline">${formatDate(match.time)}</span>
+                        <span class="badge badge-outline text-lg">${formatDate(match.time)}</span>
                         <span class="text-2xl" title="${match.sport}">${getSportIcon(match.sport)}</span>
                     </div>
                     <div class="flex justify-between items-center my-4">
                         <div class="text-center flex-1">
-                            <p class="font-semibold text-lg">${match.team1}</p>
+                            <p class="font-semibold text-xl">${match.team1}</p>
                         </div>
                         <div class="text-center px-4">
                             <p class="text-2xl font-bold">${match.sport === 'Athletics' ? match.duration : match.score}</p>
                         </div>
                         <div class="text-center flex-1">
-                            <p class="font-semibold text-lg">${match.team2}</p>
+                            <p class="font-semibold text-xl">${match.team2}</p>
                         </div>
                     </div>
-                    <p class="text-sm text-gray-600">${match.eventType}</p>
+                    <p class="text-lg text-gray-800">${match.eventType}</p>
                     ${cardsDisplay}
-                    <p class="text-sm text-gray-500">${venueDisplay}</p>
+                    <p class="text-lg text-gray-800">${venueDisplay}</p>
                 </div>
             `;
             resultsList.appendChild(card);
@@ -742,8 +742,8 @@ async function loadAdminMatches(sport = 'all', eventType = 'all') {
             (match.score ? `<span class="font-bold">${match.score}</span>` : '<span class="badge badge-outline">Upcoming</span>');
         
         const cardsDisplay = match.sport === 'Football' ? `
-            <p class="text-sm">Yellow: ${match.yellowCards.team1}-${match.yellowCards.team2}</p>
-            <p class="text-sm">Red: ${match.redCards.team1}-${match.redCards.team2}</p>
+            <p class="text-lg">Yellow: ${match.yellowCards.team1}-${match.yellowCards.team2}</p>
+            <p class="text-lg">Red: ${match.redCards.team1}-${match.redCards.team2}</p>
         ` : '';
         
         const venueDisplay = match.venue ? 
@@ -766,12 +766,12 @@ async function loadAdminMatches(sport = 'all', eventType = 'all') {
                     </div>
                 </div>
                 <h3 class="font-medium text-gray-800">${match.team1} vs ${match.team2}</h3>
-                <div class="flex justify-between items-center mt-2 text-sm">
+                <div class="flex justify-between items-center mt-2 text-lg">
                     <div>
-                        <p class="text-gray-600">${formatDate(match.time)}</p>
+                        <p class="text-gray-800">${formatDate(match.time)}</p>
                         ${cardsDisplay}
-                        <p class="text-gray-600">${venueDisplay}</p>
-                        <p class="text-gray-600">${match.round}</p>
+                        <p class="text-gray-800">${venueDisplay}</p>
+                        <p class="text-gray-800">${match.round}</p>
                     </div>
                     <p class="font-bold text-right text-red-800 text-xl">${resultDisplay}</p>
                 </div>
