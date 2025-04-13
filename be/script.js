@@ -152,13 +152,13 @@ function updateTabStyles(activeFilter) {
 
 function getRoundPriority(round) {
     const roundOrder = {
-        'Vòng chung kết': 10,
-        'Bán kết': 8,
-        'Tứ kết': 6,
+        'Chung Kết': 10,
+        'Bán Kết': 8,
+        'Tứ Kết': 6,
         'Vòng 1/8': 4,
-        'Vòng bảng 3': 3, 
-        'Vòng bảng 2': 1, 
-        'Vòng bảng 1': 0
+        'Vòng Bảng 3': 3, 
+        'Vòng Bảng 2': 1, 
+        'Vòng Bảng 1': 0
     };
     return roundOrder[round] !== undefined ? roundOrder[round] : -1;
 }
@@ -624,7 +624,7 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
     const round = document.getElementById('round').value.trim();
 
     if (!sport || !eventType || !team1 || !team2 || !time || !round) {
-        showToast('Please fill in all required fields correctly. Round must be one of: Vòng bảng 1, Vòng bảng 2, Vòng 1/8, Tứ kết, Bán kết, Vòng chung kết', 'warning');
+        showToast('Please fill in all required fields correctly. Round must be one of: Vòng Bảng 1, Vòng Bảng 2, Vòng Bảng 2, Vòng 1/8, Tứ Kết, Bán Kết, Chung Kết', 'warning');
         return;
     }
 
