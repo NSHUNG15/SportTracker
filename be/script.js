@@ -692,7 +692,22 @@ function editMatch(matchId) {
             document.getElementById('redCards1').value = match.redCards.team1;
             document.getElementById('redCards2').value = match.redCards.team2;
             document.getElementById('venue').value = match.venue?._id || '';
-            document.getElementById('time').value = match.time ? new Date(match.time).toISOString().slice(0, 16) : '';
+
+            // Xử lý thời gian
+            if (match.time) {
+                const date = new Date(match.time);
+                // Chuyển đổi thành định dạng YYYY-MM-DDThh:mm cho input datetime-local
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const formattedTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+                document.getElementById('time').value = formattedTime;
+            } else {
+                document.getElementById('time').value = '';
+            }
+
             document.getElementById('round').value = match.round;
             document.getElementById('match-form').dataset.matchId = match._id;
         })
