@@ -13,11 +13,29 @@
         <div class="container p-4 mx-auto">
             <div class="flex items-center justify-between">
                 <h1 class="text-2xl font-bold">SportTracker Admin</h1>
-                <div class="flex hidden space-x-4" id="nav-links">
-                    <a href="./../index.html" class="btn btn-ghost btn-sm">Schedule</a>
-                    <a href="results.html" class="btn btn-ghost btn-sm">Results</a>
-                    <button onclick="logout()" class="btn btn-error btn-sm">Logout</button>
+                
+                <!-- Mobile menu button (only visible when logged in) -->
+                <div class="block md:hidden" id="mobile-menu-button-container">
+                    <button id="mobile-menu-button" class="btn btn-ghost">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
                 </div>
+                
+                <!-- Desktop Navigation Links (hidden until logged in) -->
+                <div class="hidden space-x-4" id="nav-links">
+                    <a href="./../index.html" class="hidden md:inline-flex btn btn-ghost btn-sm">Schedule</a>
+                    <a href="results.html" class="hidden md:inline-flex btn btn-ghost btn-sm">Results</a>
+                    <button onclick="logout()" class="hidden md:inline-flex btn btn-error btn-sm">Logout</button>
+                </div>
+            </div>
+            
+            <!-- Mobile Navigation Dropdown (hidden by default) -->
+            <div id="mobile-menu" class="hidden py-4 mt-2 space-y-2 md:hidden">
+                <a href="./../index.html" class="block px-4 py-2 text-white hover:bg-gray-700">Schedule</a>
+                <a href="results.html" class="block px-4 py-2 text-white hover:bg-gray-700">Results</a>
+                <button onclick="logout()" class="block w-full px-4 py-2 text-left text-white hover:bg-red-600">Logout</button>
             </div>
         </div>
     </nav>
@@ -123,16 +141,16 @@
                 <!-- Match List -->
                 <div class="lg:col-span-2">
                     <div class="h-full p-6 bg-white rounded-lg shadow-md">
-                        <div class="flex items-center justify-between mb-4">
+                        <div class="flex flex-col justify-between mb-4 lg:flex-row lg:items-center">
                             <h2 class="text-xl font-bold text-gray-800">Match List</h2>
-                            <div class="flex space-x-2">
-                                <input type="text" id="admin-search" placeholder="Search..." class="input input-bordered input-sm" onkeyup="searchAdminMatches()">
+                            <div class="flex mt-2 space-x-2">
+                                <input type="text" id="admin-search" placeholder="Search..." class="w-full input input-bordered input-md" onkeyup="searchAdminMatches()">
                             </div>
                         </div>
                         <div class="mb-4 divider"></div>
                         
-                        <!-- Tabs -->
-                        <div class="mb-6 bg-gray-100 tabs tabs-boxed">
+                        <!-- Desktop Tabs -->
+                        <div class="hidden mb-6 bg-gray-100 md:flex tabs tabs-boxed">
                             <a class="tab tab-active" onclick="filterAdminMatches('all')">All</a>
                             <a class="tab" onclick="filterAdminMatches('Football')">Football</a>
                             <a class="tab" onclick="filterAdminMatches('Badminton')">Badminton</a>
@@ -140,8 +158,19 @@
                             <a class="tab" onclick="filterAdminMatches('Athletics')">Athletics</a>
                         </div>
                         
+                        <!-- Mobile Dropdown -->
+                        <div class="block mb-6 md:hidden">
+                            <select class="w-full select select-bordered" id="mobile-filter" onchange="filterAdminMatches(this.value)">
+                                <option value="all">All Sports</option>
+                                <option value="Football">Football</option>
+                                <option value="Badminton">Badminton</option>
+                                <option value="Chess">Chess</option>
+                                <option value="Athletics">Athletics</option>
+                            </select>
+                        </div>
+                        
                         <div class="overflow-y-auto max-h-200">
-                            <div id="admin-match-list" class="grid grid-cols-2 gap-4">
+                            <div id="admin-match-list" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <!-- Admin matches will be populated here -->
                             </div>
                             
@@ -161,5 +190,6 @@
     </div>
 
     <script src="./../be/script.js"></script>
+    <script src="./../responsive.js"></script>
 </body>
 </html>

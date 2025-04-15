@@ -13,11 +13,29 @@
         <div class="container p-4 mx-auto">
             <div class="flex items-center justify-between">
                 <h1 class="text-2xl font-bold">SportTracker</h1>
-                <div class="flex space-x-4">
+                
+                <!-- Mobile menu button -->
+                <div class="block md:hidden">
+                    <button id="mobile-menu-button" class="btn btn-ghost">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden space-x-4 md:flex">
                     <a href="index.html" class="btn btn-ghost btn-sm">Schedule</a>
                     <a href="./pages/results.html" class="btn btn-ghost btn-sm">Results</a>
                     <a href="./pages/admin.html" class="btn btn-primary btn-sm">Admin</a>
                 </div>
+            </div>
+            
+            <!-- Mobile Navigation Dropdown (hidden by default) -->
+            <div id="mobile-menu" class="hidden py-4 mt-2 space-y-2 md:hidden">
+                <a href="index.html" class="block px-4 py-2 text-white hover:bg-indigo-700">Schedule</a>
+                <a href="./pages/results.html" class="block px-4 py-2 text-white hover:bg-indigo-700">Results</a>
+                <a href="./pages/admin.html" class="block px-4 py-2 text-white hover:bg-indigo-700">Admin</a>
             </div>
         </div>
     </nav>
@@ -31,15 +49,28 @@
         <!-- Search & Filter -->
         <div class="p-4 mb-8 bg-white rounded-lg shadow-md">
             <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
-                <div class="flex-1">
+                <div class="flex-1 w-full">
                     <input type="text" id="search-matches" placeholder="Search matches..." class="w-full input input-bordered" onkeyup="searchMatches()">
                 </div>
-                <div class="tabs tabs-boxed">
+                
+                <!-- Desktop Tabs -->
+                <div class="hidden md:flex tabs tabs-boxed">
                     <a class="tab tab-active" onclick="filterMatches('all')">All</a>
                     <a class="tab" onclick="filterMatches('Football')">Football</a>
                     <a class="tab" onclick="filterMatches('Badminton')">Badminton</a>
                     <a class="tab" onclick="filterMatches('Chess')">Chess</a>
                     <a class="tab" onclick="filterMatches('Athletics')">Athletics</a>
+                </div>
+                
+                <!-- Mobile Dropdown -->
+                <div class="w-full md:hidden">
+                    <select class="w-full select select-bordered" id="mobile-filter" onchange="filterMatches(this.value)">
+                        <option value="all">All Sports</option>
+                        <option value="Football">Football</option>
+                        <option value="Badminton">Badminton</option>
+                        <option value="Chess">Chess</option>
+                        <option value="Athletics">Athletics</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -73,5 +104,6 @@
     </footer>
 
     <script src="./../be/script.js"></script>
+    <script src="./responsive.js"></script>
 </body>
 </html>
