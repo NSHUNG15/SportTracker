@@ -303,7 +303,7 @@ async function loadMatches(sport = 'all', eventType = 'all') {
         roundSection.appendChild(roundTitle);
 
         const matchList = document.createElement('div');
-        matchList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3';
+        matchList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4';
         
         matchesByRound[round].sort((a, b) => new Date(a.time) - new Date(b.time));
         matchesByRound[round].forEach(match => {
@@ -388,7 +388,7 @@ async function loadResults(sport = 'all', eventType = 'all') {
         roundSection.appendChild(roundTitle);
 
         const resultsList = document.createElement('div');
-        resultsList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3';
+        resultsList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4';
         
         matchesByRound[round].sort((a, b) => new Date(b.time) - new Date(a.time));
         matchesByRound[round].forEach(match => {
