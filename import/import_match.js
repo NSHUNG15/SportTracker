@@ -51,8 +51,9 @@ async function importData() {
     }));
 
     // Xóa dữ liệu cũ trong collection matches
-    await Match.deleteMany({});
-    console.log('Cleared old matches data');
+    console.log('Attempting to delete existing football matches...');
+    const deleteResult = await Match.deleteMany({ sport: 'football' });
+    console.log(`Deleted ${deleteResult.deletedCount} football matches`);
 
     // Import matches
     const insertedMatches = await Match.insertMany(formattedMatches);

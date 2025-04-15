@@ -30,7 +30,8 @@ async function importVenues() {
 
     // Xóa dữ liệu cũ trong collection venues (tùy chọn)
     await Venue.deleteMany({});
-    console.log('Cleared old venues data');
+    const deleteResult = await Venue.deleteMany({ sport: 'football' });
+    console.log(`Deleted ${deleteResult.deletedCount} football matches`);
 
     // Chuẩn bị dữ liệu venues với _id
     const venuesToInsert = data.venues.map(venue => ({
