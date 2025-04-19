@@ -303,7 +303,7 @@ async function loadMatches(sport = 'all', eventType = 'all') {
         roundSection.appendChild(roundTitle);
 
         const matchList = document.createElement('div');
-        matchList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4';
+        matchList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3';
         
         matchesByRound[round].sort((a, b) => new Date(a.time) - new Date(b.time));
         matchesByRound[round].forEach(match => {
@@ -388,7 +388,7 @@ async function loadResults(sport = 'all', eventType = 'all') {
         roundSection.appendChild(roundTitle);
 
         const resultsList = document.createElement('div');
-        resultsList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4';
+        resultsList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3';
         
         matchesByRound[round].sort((a, b) => new Date(b.time) - new Date(a.time));
         matchesByRound[round].forEach(match => {
@@ -404,11 +404,11 @@ async function loadResults(sport = 'all', eventType = 'all') {
                 const scores = match.score.split('-').map(s => parseInt(s.trim()));
                 if (scores[0] > scores[1]) {
                     resultBadge = `<div class="absolute top-0 right-0 m-2">
-                        <span class="badge badge-success text-lg p-3">${match.team1} won</span>
+                        <span class="badge badge-success text-lg p-3">${match.team1} WIN</span>
                     </div>`;
                 } else if (scores[0] < scores[1]) {
                     resultBadge = `<div class="absolute top-0 right-0 m-2">
-                        <span class="badge badge-success p-3 text-lg">${match.team2} won</span>
+                        <span class="badge badge-success p-3 text-lg">${match.team2} WIN</span>
                     </div>`;
                 } else {
                     resultBadge = `<div class="absolute top-0 right-0 m-2">
