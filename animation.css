@@ -1,0 +1,172 @@
+/* General Animations for All Pages */
+body {
+  @apply animate-fade-in;
+}
+
+/* Fade-in animation for page load */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out;
+}
+
+/* Slide-in animation for navigation */
+nav {
+  @apply animate-slide-in-down;
+}
+@keyframes slide-in-down {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.animate-slide-in-down {
+  animation: slide-in-down 0.6s ease-out;
+}
+
+/* Hover effect for navigation links */
+nav a, nav button {
+  @apply transition-transform duration-300 ease-in-out;
+}
+nav a:hover, nav button:hover {
+  @apply transform scale-110;
+}
+
+/* Mobile menu animation */
+#mobile-menu {
+  @apply transition-all duration-300 ease-in-out;
+}
+#mobile-menu.hidden {
+  @apply transform -translate-y-4 opacity-0;
+}
+#mobile-menu:not(.hidden) {
+  @apply transform translate-y-0 opacity-100;
+}
+
+/* Slide-in animation for main content */
+.container {
+  @apply animate-slide-in-up;
+}
+@keyframes slide-in-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.animate-slide-in-up {
+  animation: slide-in-up 0.8s ease-out 0.2s both;
+}
+
+/* Animation for match cards (used in index.html, results.html, admin.html) */
+.card {
+  @apply transition-all duration-300 ease-in-out;
+}
+.card:hover {
+  @apply transform scale-105 shadow-lg;
+}
+
+/* Animation for tables (used in groups.html) */
+.table {
+  @apply animate-fade-in;
+}
+.table tr {
+  @apply transition-all duration-200 ease-in-out;
+}
+.table tr:hover {
+  @apply transform bg-gray-50 scale-102;
+}
+
+/* Form animations (used in admin.html) */
+.form-control {
+  @apply animate-slide-in-right;
+}
+@keyframes slide-in-right {
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 0.6s ease-out both;
+}
+
+/* Button animations */
+.btn {
+  @apply transition-all duration-300 ease-in-out;
+}
+.btn:hover {
+  @apply transform scale-105 brightness-110;
+}
+
+/* Animation for no-matches/results/standings messages */
+#no-matches, #no-results, #no-standings, #no-admin-matches {
+  @apply animate-pulse;
+}
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Animation for search and filter inputs */
+input, select {
+  @apply transition-all duration-300 ease-in-out;
+}
+input:focus, select:focus {
+  @apply transform scale-102 ring-2 ring-indigo-500;
+}
+
+/* Footer animation */
+footer {
+  @apply animate-slide-in-up;
+}
+
+/* Specific animations for admin login form */
+#login-form {
+  @apply animate-zoom-in;
+}
+@keyframes zoom-in {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.animate-zoom-in {
+  animation: zoom-in 0.6s ease-out;
+}
+
+/* Animation for tabs */
+.tabs a {
+  @apply transition-all duration-200 ease-in-out;
+}
+.tabs a:hover, .tabs a.tab-active {
+  @apply transform scale-110;
+}
