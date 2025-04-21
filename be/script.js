@@ -154,12 +154,12 @@ function getRoundPriority(round) {
     const roundOrder = {
         'Chung Kết': 1000000,
         'Tranh Hạng 3':99999,
-        'Bán Kết 1': 10, 'Bán Kết 2': 11 , 'Bán Kết': 11,
-        'Tứ Kết 1': 6, 'Tứ Kết 2' :7, 'Tứ Kết 3' :8, 'Tứ Kết 4' :9, 'Tứ Kết' :9,
+        'Bán Kết 1': 10, 'Bán Kết 2': 11 , 'Bán Kết': 12,
+        'Tứ Kết 1': 5, 'Tứ Kết 2' :6, 'Tứ Kết 3' :7, 'Tứ Kết 4' :8, 'Tứ Kết' :9,
         'Vòng 1/8': 4,
         'Vòng Bảng 3': 3, 
-        'Vòng Bảng 2': 1, 
-        'Vòng Bảng 1': 0
+        'Vòng Bảng 2': 2, 
+        'Vòng Bảng 1': 1
     };
     return roundOrder[round] !== undefined ? roundOrder[round] : -1;
 }
