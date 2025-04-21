@@ -40,7 +40,7 @@ const matchSchema = new mongoose.Schema({
   round: { type: String, required: true },
   status: { type: String, enum: ['Upcoming', 'Completed'], default: 'Upcoming' },
   venue: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue', default: null },
-  group: { type: String, enum: ['A', 'B', 'C', 'D', 'E', 'F', null], default: null } // Thêm trường group
+  group: { type: String, enum: ['A', 'B', 'C', 'D', 'E', 'F', , 'G', 'H', 'I', 'J', null], default: null } // Thêm trường group
 });
 
 const Match = mongoose.model('Match', matchSchema);

@@ -739,6 +739,10 @@ function editMatch(matchId) {
 
             document.getElementById('round').value = match.round;
             document.getElementById('match-form').dataset.matchId = match._id;
+
+            // Cuộn mượt mà đến phần form
+            const matchForm = document.getElementById('match-form');
+            matchForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
         })
         .catch(error => {
             console.error('Error fetching match:', error);
