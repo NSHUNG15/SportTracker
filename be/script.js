@@ -152,10 +152,10 @@ function updateTabStyles(activeFilter) {
 
 function getRoundPriority(round) {
     const roundOrder = {
-        'Chung Kết': 10,
-        'Tranh Hạng 3':9,
-        'Bán Kết 1': 8, 'Bán Kết 2':8, 'Bán Kết': 8,
-        'Tứ Kết 1': 6, 'Tứ Kết 2' :6, 'Tứ Kết 3' :6, 'Tứ Kết 4' :6, 'Tứ Kết' :6,
+        'Chung Kết': 1000000,
+        'Tranh Hạng 3':99999,
+        'Bán Kết 1': 10, 'Bán Kết 2': 11 , 'Bán Kết': 11,
+        'Tứ Kết 1': 6, 'Tứ Kết 2' :7, 'Tứ Kết 3' :8, 'Tứ Kết 4' :9, 'Tứ Kết' :9,
         'Vòng 1/8': 4,
         'Vòng Bảng 3': 3, 
         'Vòng Bảng 2': 1, 
