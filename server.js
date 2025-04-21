@@ -31,7 +31,7 @@ const matchSchema = new mongoose.Schema({
   sport: { type: String, required: true },
   eventType: { type: String, required: true },
   team1: { type: String, required: true },
-  team2: { type: String, required: true },
+  team2: { type: String, default: '' }, // Không yêu cầu team2
   score: { type: String, default: '' },
   duration: { type: String, default: '' },
   yellowCards: { team1: { type: Number, default: 0 }, team2: { type: Number, default: 0 } },
@@ -40,7 +40,7 @@ const matchSchema = new mongoose.Schema({
   round: { type: String, required: true },
   status: { type: String, enum: ['Upcoming', 'Completed'], default: 'Upcoming' },
   venue: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue', default: null },
-  group: { type: String, enum: ['A', 'B', 'C', 'D', 'E', 'F', , 'G', 'H', 'I', 'J', null], default: null } // Thêm trường group
+  group: { type: String, enum: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', null], default: null }
 });
 
 const Match = mongoose.model('Match', matchSchema);
@@ -175,7 +175,6 @@ app.get('/match/:id', async (req, res) => {
 });
 
 // API cập nhật trận đấu
-// API cập nhật trận đấu
 app.put('/match/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -206,9 +205,9 @@ app.put('/match/:id', async (req, res) => {
       if (!groupExists) {
         return res.status(404).json({ error: 'Group not found' });
       }
-      if (!groupExists.teams.includes(matchData.team1) || !groupExists.teams.includes(matchData.team2)) {
+      if (!groupExists.teams.includes(matchData.team1) || (matchData.team2 && !groupExists.teams.includes(matchData.team2))) {
         // Cập nhật danh sách đội trong group
-        groupExists.teams = [...new Set([...groupExists.teams, matchData.team1, matchData.team2])];
+        groupExists.teams = [...new Set([...groupExists.teams, matchData.team1, matchData.team2])].filter(Boolean);
         await groupExists.save();
       }
     } else {
@@ -230,7 +229,7 @@ app.put('/match/:id', async (req, res) => {
           ),
         ];
 
-        // Cập nhật danh sách đội trong group cũ, chỉ giữ lại các đội còn trong các trận đấu khác
+        // Cập nhật danh sách đội trong group cũ
         oldGroup.teams = oldGroup.teams.filter((team) =>
           teamsInOtherMatches.includes(team)
         );
@@ -280,7 +279,7 @@ app.delete('/match/:id', async (req, res) => {
           ),
         ];
 
-        // Cập nhật danh sách đội, chỉ giữ lại các đội còn trong các trận đấu khác
+        // Cập nhật danh sách đội
         group.teams = group.teams.filter((team) =>
           teamsInOtherMatches.includes(team)
         );

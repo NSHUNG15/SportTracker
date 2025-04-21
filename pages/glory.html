@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competition Podium - Enhanced 3D Carousel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3a8a, #7c3aed);
+            color: #ffffff;
+            perspective: 1500px;
+            overflow-x: hidden;;
+            display: flex;
+            flex-direction: column;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .glass-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+        .podium-step {
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            width: 30%;
+            border-radius: 12px;
+            position: relative;
+        }
+        .podium-step:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+        .podium-step.gold {
+            background: linear-gradient(135deg, #facc15, #f97316);
+            height: 300px;
+        }
+        .podium-step.silver {
+            background: linear-gradient(135deg, #d1d5db, #9ca3af);
+            height: 240px;
+        }
+        .podium-step.bronze {
+            background: linear-gradient(135deg, #ea580c, #b45309);
+            height: 180px;
+        }
+        .winner-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #ffffff;
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+            z-index: 10;
+        }
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            height: 800px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 3rem;
+            padding: 0 1rem;
+        }
+        .carousel {
+            position: absolute;
+            width: 90%;
+            max-width: 1400px;
+            height: 700px;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        .carousel-panel {
+            position: absolute;
+            width: 100%;
+            height: 700px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backface-visibility: hidden;
+            padding: 2rem;
+        }
+        .carousel-panel:hover {
+            transform: scale(1.02);
+        }
+        .carousel-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.4);
+            padding: 12px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            z-index: 20;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+        .carousel-arrow:hover {
+            background: rgba(255, 255, 255, 0.6);
+            transform: translateY(-50%) scale(1.1);
+        }
+        .carousel-arrow.left {
+            left: 10px;
+        }
+        .carousel-arrow.right {
+            right: 10px;
+        }
+        .confetti {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: confetti-fall 4s linear infinite;
+            z-index: 5;
+        }
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        .podium-text {
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            font-weight: 600;
+        }
+        .podium-label {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        @media (max-width: 768px) {
+            .podium-step {
+                width: 90%;
+                margin-bottom: 2rem;
+            }
+            .carousel-container {
+                height: 600px;
+            }
+            .carousel {
+                height: 500px;
+            }
+            .carousel-panel {
+                padding: 1rem;
+            }
+            .winner-image {
+                width: 60px;
+                height: 60px;
+                top: -30px;
+            }
+            .podium-text {
+                font-size: 0.9rem;
+            }
+            .podium-label {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900">
+    <nav class="text-white bg-indigo-900 shadow-lg">
+        <div class="p-4 mx-auto lg:container">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold">SportTracker</h1>
+                <div class="block md:hidden">
+                    <button id="mobile-menu-button" class="btn btn-ghost">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="hidden space-x-4 ">
+                    <a href="./../index.html" class="btn btn-ghost btn-sm">Schedule</a>
+                    <a href="results.html" class="btn btn-ghost btn-sm">Results</a>
+                    <a href="admin.html" class="btn btn-primary btn-sm">Admin</a>
+                </div>
+            </div>
+            <div id="mobile-menu" class="hidden py-4 mt-2 space-y-2 md:hidden">
+                <a href="./../index.html" class="block px-4 py-2 text-white hover:bg-indigo-700">Schedule</a>
+                <a href="results.html" class="block px-4 py-2 text-white hover:bg-indigo-700">Results</a>
+                <a href="admin.html" class="block px-4 py-2 text-white hover:bg-indigo-700">Admin</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container p-6 mx-auto">
+        <h1 class="mb-12 text-5xl font-bold text-center text-white animate-fade-in">Competition Podium - Final Rankings</h1>
+        <div class="carousel-container">
+            <div class="carousel" id="sport-carousel"></div>
+            <div class="carousel-arrow left" onclick="rotateCarousel(-1)">←</div>
+            <div class="carousel-arrow right" onclick="rotateCarousel(1)">→</div>
+        </div>
+    </div>
+
+    <script>
+        function parseTimeToSeconds(timeStr) {
+            if (!timeStr) return Infinity;
+            const parts = timeStr.split(':');
+            if (parts.length === 2) {
+                const [minutes, seconds] = parts.map(Number);
+                return minutes * 60 + seconds;
+            }
+            return parseFloat(timeStr);
+        }
+
+        async function fetchMatches() {
+            try {
+                const response = await fetch('/matches');
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching matches:', error);
+                return { matches: [] };
+            }
+        }
+
+        function getSportIcon(sport) {
+            switch (sport.toLowerCase()) {
+                case 'football': return '⚽';
+                case 'badminton': return '🏸';
+                case 'chess': return '♟️';
+                case 'athletics': return '🏃';
+                default: return '🎮';
+            }
+        }
+
+        function processPodiumData(sport, eventType, matches) {
+            let first = null, second = null, third = null;
+
+            if (sport === 'Athletics') {
+                const relevantMatches = matches
+                    .filter(m => m.sport === sport && m.eventType === eventType && m.duration && (m.round === 'Chung Kết' || m.round === 'Tranh Hạng 3'))
+                    .map(m => ({
+                        name: m.team1,
+                        duration: m.duration,
+                        eventType: m.eventType,
+                        timeInSeconds: parseTimeToSeconds(m.duration)
+                    }));
+
+                relevantMatches.sort((a, b) => a.timeInSeconds - b.timeInSeconds);
+
+                if (relevantMatches[0]) {
+                    first = { name: relevantMatches[0].name, eventType: relevantMatches[0].eventType, duration: relevantMatches[0].duration };
+                }
+                if (relevantMatches[1]) {
+                    second = { name: relevantMatches[1].name, eventType: relevantMatches[1].eventType, duration: relevantMatches[1].duration };
+                }
+                if (relevantMatches[2]) {
+                    third = { name: relevantMatches[2].name, eventType: relevantMatches[2].eventType, duration: relevantMatches[2].duration };
+                }
+            } else {
+                const finalMatch = matches.find(m => m.round === 'Chung Kết' && m.sport === sport && m.eventType === eventType);
+                const thirdPlaceMatch = matches.find(m => m.round === 'Tranh Hạng 3' && m.sport === sport && m.eventType === eventType);
+
+                if (finalMatch && finalMatch.score) {
+                    const [score1, score2] = finalMatch.score.split('-').map(Number);
+                    if (score1 > score2) {
+                        first = { name: finalMatch.team1, eventType: finalMatch.eventType };
+                        second = { name: finalMatch.team2, eventType: finalMatch.eventType };
+                    } else if (score2 > score1) {
+                        first = { name: finalMatch.team2, eventType: finalMatch.eventType };
+                        second = { name: finalMatch.team1, eventType: finalMatch.eventType };
+                    } else {
+                        first = { name: `${finalMatch.team1} & ${finalMatch.team2} (Draw)`, eventType: finalMatch.eventType };
+                    }
+                }
+                if (thirdPlaceMatch && thirdPlaceMatch.score) {
+                    const [score1, score2] = thirdPlaceMatch.score.split('-').map(Number);
+                    if (score1 > score2) {
+                        third = { name: thirdPlaceMatch.team1, eventType: thirdPlaceMatch.eventType };
+                    } else if (score2 > score1) {
+                        third = { name: thirdPlaceMatch.team2, eventType: thirdPlaceMatch.eventType };
+                    } else {
+                        third = { name: `${thirdPlaceMatch.team1} & ${thirdPlaceMatch.team2} (Draw)`, eventType: thirdPlaceMatch.eventType };
+                    }
+                }
+            }
+
+            return { first, second, third };
+        }
+
+        function renderPodium(sport, eventType, podiumData, panelElement) {
+            const podiumElement = panelElement.querySelector('.podium');
+            const sportTitle = panelElement.querySelector('.sport-title');
+            if (!podiumElement || !sportTitle) return;
+
+            sportTitle.textContent = `${getSportIcon(sport)} ${sport} - ${eventType}`;
+            const { first, second, third } = podiumData;
+
+            let confettiHTML = '';
+            if (first) {
+                const colors = ['#FFD700', '#FF4500', '#1E90FF', '#32CD32'];
+                for (let i = 0; i < 20; i++) {
+                    const left = Math.random() * 100;
+                    const delay = Math.random() * 4;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    confettiHTML += `<div class="confetti" style="left: ${left}%; animation-delay: ${delay}s; background: ${color};"></div>`;
+                }
+            }
+
+            podiumElement.innerHTML = `
+                <div class="flex flex-col items-end justify-center w-full space-y-4 md:flex-row md:space-y-0 md:space-x-4 mt-[5rem]">
+                    <!-- Second Place -->
+                    <div class="relative flex flex-col items-center podium-step silver">
+                        ${second ? `<img src="./../win.png" class="winner-image" alt="Silver medalist" />` : ''}
+                        <div class="w-full flex flex-col items-center justify-end rounded-t-lg ${second ? 'text-white' : 'text-gray-400'}">
+                            <p class="px-4 mt-16 text-lg font-bold text-center podium-text">${second ? second.name : 'N/A'}</p>
+                            ${second && sport === 'Athletics' ? `<p class="px-4 text-sm text-center podium-text">${second.duration}</p>` : ''}
+                        </div>
+                        <div class="w-full h-12 font-bold text-center rounded-b-lg podium-label">2nd</div>
+                    </div>
+                    <!-- First Place -->
+                    <div class="relative flex flex-col items-center podium-step gold">
+                        ${confettiHTML}
+                        ${first ? `<img src="./../win.png" class="winner-image" alt="Gold medalist" />` : ''}
+                        <div class="w-full flex flex-col items-center justify-end rounded-t-lg ${first ? 'text-white' : 'text-gray-400'}">
+                            <p class="px-4 mt-16 text-lg font-bold text-center podium-text">${first ? first.name : 'N/A'}</p>
+                            ${first && sport === 'Athletics' ? `<p class="px-4 text-sm text-center podium-text">${first.duration}</p>` : ''}
+                        </div>
+                        <div class="w-full h-12 font-bold text-center rounded-b-lg podium-label">1st</div>
+                    </div>
+                    <!-- Third Place -->
+                    <div class="relative flex flex-col items-center podium-step bronze">
+                        ${third ? `<img src="./../win.png" class="winner-image" alt="Bronze medalist" />` : ''}
+                        <div class="w-full flex flex-col items-center justify-end rounded-t-lg ${third ? 'text-white' : 'text-gray-400'}">
+                            <p class="px-4 mt-16 text-lg font-bold text-center podium-text">${third ? third.name : 'N/A'}</p>
+                            ${third && sport === 'Athletics' ? `<p class="px-4 text-sm text-center podium-text">${third.duration}</p>` : ''}
+                        </div>
+                        <div class="w-full h-12 font-bold text-center rounded-b-lg podium-label">3rd</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        const sports = [
+            { name: 'Football', icon: '⚽' },
+            { name: 'Badminton', icon: '🏸' },
+            { name: 'Chess', icon: '♟️' },
+            { name: 'Athletics', icon: '🏃' }
+        ];
+        let currentAngle = 0;
+        let matchesData = null;
+        let totalPanels = 0;
+
+        async function setupCarousel() {
+            const carousel = document.getElementById('sport-carousel');
+            const radius = 2200;
+
+            const eventTypesBySport = {};
+            matchesData.matches.forEach(match => {
+                if (!eventTypesBySport[match.sport]) {
+                    eventTypesBySport[match.sport] = new Set();
+                }
+                eventTypesBySport[match.sport].add(match.eventType);
+            });
+
+            const panels = [];
+            sports.forEach(sport => {
+                const eventTypes = eventTypesBySport[sport.name] ? Array.from(eventTypesBySport[sport.name]) : ['N/A'];
+                eventTypes.forEach(eventType => {
+                    panels.push({ sport: sport.name, eventType });
+                });
+            });
+
+            totalPanels = panels.length;
+
+            carousel.innerHTML = panels.map((panel, index) => {
+                const angle = (index * (360 / totalPanels));
+                return `
+                    <div class="carousel-panel glass-card" style="transform: rotateY(${angle}deg) translateZ(${radius}px);">
+                        <h2 class="mb-6 text-2xl font-semibold text-white sport-title"></h2>
+                        <div class="w-full px-4 podium"></div>
+                    </div>
+                `;
+            }).join('');
+
+            panels.forEach((panel, index) => {
+                const panelElement = carousel.children[index];
+                const podiumData = processPodiumData(panel.sport, panel.eventType, matchesData.matches);
+                renderPodium(panel.sport, panel.eventType, podiumData, panelElement);
+            });
+        }
+
+        function rotateCarousel(direction) {
+            if (totalPanels === 0) return;
+            currentAngle += direction * (360 / totalPanels);
+            const carousel = document.getElementById('sport-carousel');
+            carousel.style.transform = `rotateY(${currentAngle}deg)`;
+        }
+
+        function selectSport(index) {
+            if (totalPanels === 0) return;
+            const targetAngle = -index * (360 / totalPanels);
+            currentAngle = targetAngle;
+            const carousel = document.getElementById('sport-carousel');
+            carousel.style.transform = `rotateY(${currentAngle}deg)`;
+        }
+
+        async function init() {
+            matchesData = await fetchMatches();
+            await setupCarousel();
+            selectSport(0);
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
+
+        document.querySelectorAll('.animate-fade-in').forEach(el => {
+            el.style.opacity = 0;
+            el.style.transition = 'opacity 1s ease';
+            setTimeout(() => {
+                el.style.opacity = 1;
+            }, 100);
+        });
+    </script>
+</body>
+</html>

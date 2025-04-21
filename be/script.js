@@ -320,6 +320,7 @@ async function loadMatches(sport = 'all', eventType = 'all') {
             
             const venueDisplay = match.venue ? `${match.venue.name}` : 'TBD';
             const groupDisplay = match.group ? `<p class="text-lg text-gray-800">Group: ${match.group}</p>` : '';
+            const teamDisplay = match.sport === 'Athletics' ? match.team1 : `${match.team1} vs ${match.team2}`;
             
             card.innerHTML = `
                 <div class="card-body p-6">
@@ -327,7 +328,7 @@ async function loadMatches(sport = 'all', eventType = 'all') {
                         <span class="badge text-lg ${statusClass}">${statusText}</span>
                         <span class="text-2xl" title="${match.sport}">${getSportIcon(match.sport)}</span>
                     </div>
-                    <h2 class="card-title text-xl">${match.team1} vs ${match.team2}</h2>
+                    <h2 class="card-title text-xl">${teamDisplay}</h2>
                     <p class="text-lg text-gray-800">${match.eventType}</p>
                     <div class="flex justify-between items-center mt-4">
                         <div>
@@ -429,6 +430,19 @@ async function loadResults(sport = 'all', eventType = 'all') {
             
             const venueDisplay = match.venue ? `${match.venue.name}` : 'TBD';
             const groupDisplay = match.group ? `<p class="text-lg">Group: ${match.group}</p>` : '';
+            const teamDisplay = match.sport === 'Athletics' ? 
+                `<p class="font-semibold text-xl">${match.team1}</p>` :
+                `
+                    <div class="text-center flex-1">
+                        <p class="font-semibold text-xl">${match.team1}</p>
+                    </div>
+                    <div class="text-center px-4">
+                        <p class="text-2xl font-bold">${match.score}</p>
+                    </div>
+                    <div class="text-center flex-1">
+                        <p class="font-semibold text-xl">${match.team2}</p>
+                    </div>
+                `;
             
             card.innerHTML = `
                 <div class="card-body p-6 relative">
@@ -438,15 +452,7 @@ async function loadResults(sport = 'all', eventType = 'all') {
                         <span class="text-2xl" title="${match.sport}">${getSportIcon(match.sport)}</span>
                     </div>
                     <div class="flex justify-between items-center my-4">
-                        <div class="text-center flex-1">
-                            <p class="font-semibold text-xl">${match.team1}</p>
-                        </div>
-                        <div class="text-center px-4">
-                            <p class="text-2xl font-bold">${match.sport === 'Athletics' ? match.duration : match.score}</p>
-                        </div>
-                        <div class="text-center flex-1">
-                            <p class="font-semibold text-xl">${match.team2}</p>
-                        </div>
+                        ${teamDisplay}
                     </div>
                     <p class="text-lg text-gray-800">${match.eventType}</p>
                     ${cardsDisplay}
@@ -568,22 +574,20 @@ function updateEventTypes() {
     const durationField = document.getElementById('duration-field');
     const cardsField = document.getElementById('cards-field');
     const groupField = document.getElementById('group-field');
+    const team2Field = document.getElementById('team2-field');
 
     if (sport === 'Athletics') {
         scoreField.classList.add('hidden');
         durationField.classList.remove('hidden');
         cardsField.classList.add('hidden');
         groupField.classList.add('hidden');
-    } else if (sport === 'Football') {
-        scoreField.classList.remove('hidden');
-        durationField.classList.add('hidden');
-        cardsField.classList.remove('hidden');
-        groupField.classList.remove('hidden');
+        team2Field.classList.add('hidden');
     } else {
         scoreField.classList.remove('hidden');
         durationField.classList.add('hidden');
-        cardsField.classList.add('hidden');
-        groupField.classList.add('hidden');
+        cardsField.classList.toggle('hidden', sport !== 'Football');
+        groupField.classList.toggle('hidden', sport !== 'Football');
+        team2Field.classList.remove('hidden');
     }
 }
 
@@ -616,7 +620,7 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
     const sport = document.getElementById('sport').value;
     const eventType = document.getElementById('eventType').value;
     const team1 = document.getElementById('team1').value.trim();
-    const team2 = document.getElementById('team2').value.trim();
+    const team2 = sport === 'Athletics' ? '' : document.getElementById('team2').value.trim();
     const score = document.getElementById('score').value.trim();
     const duration = document.getElementById('duration').value.trim();
     const yellowCards1 = parseInt(document.getElementById('yellowCards1').value) || 0;
@@ -628,8 +632,14 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
     const round = document.getElementById('round').value.trim();
     const group = sport === 'Football' ? document.getElementById('group').value || null : null;
 
-    if (!sport || !eventType || !team1 || (sport !== 'Athletics' && !team2) || !time || !round) {
+    // Kiểm tra các trường bắt buộc, bỏ qua team2 cho Athletics
+    if (!sport || !eventType || !team1 || !time || !round) {
         showToast('Please fill in all required fields correctly. Round must be one of: Vòng Bảng 1, Vòng Bảng 2, Vòng Bảng 3, Vòng 1/8, Tứ Kết, Bán Kết, Tranh Hạng 3, Chung Kết', 'warning');
+        return;
+    }
+
+    if (sport !== 'Athletics' && !team2) {
+        showToast('Team/Player 2 is required for non-Athletics events', 'warning');
         return;
     }
 
@@ -637,7 +647,7 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
         sport,
         eventType,
         team1,
-        team2: sport === 'Athletics' ? '' : team2,
+        team2,
         score: sport === 'Athletics' ? '' : score,
         duration: sport === 'Athletics' ? duration : '',
         yellowCards: { team1: yellowCards1, team2: yellowCards2 },
@@ -715,7 +725,7 @@ function editMatch(matchId) {
             updateEventTypes();
             document.getElementById('eventType').value = match.eventType;
             document.getElementById('team1').value = match.team1;
-            document.getElementById('team2').value = match.team2;
+            document.getElementById('team2').value = match.team2 || '';
             document.getElementById('score').value = match.score || '';
             document.getElementById('duration').value = match.duration || '';
             document.getElementById('yellowCards1').value = match.yellowCards.team1;
@@ -797,6 +807,7 @@ async function loadAdminMatches(sport = 'all', eventType = 'all') {
         
         const venueDisplay = match.venue ? `${match.venue.name}` : 'No venue assigned';
         const groupDisplay = match.group ? `<p class="text-gray-800">Group: ${match.group}</p>` : '';
+        const teamDisplay = match.sport === 'Athletics' ? match.team1 : `${match.team1} vs ${match.team2}`;
         
         card.innerHTML = `
             <div class="card-body p-4">
@@ -813,7 +824,7 @@ async function loadAdminMatches(sport = 'all', eventType = 'all') {
                         </ul>
                     </div>
                 </div>
-                <h3 class="font-medium text-gray-800">${match.team1} vs ${match.team2}</h3>
+                <h3 class="font-medium text-gray-800">${teamDisplay}</h3>
                 <div class="flex justify-between items-center mt-2 text-lg">
                     <div>
                         <p class="text-gray-800">${formatDate(match.time)}</p>
