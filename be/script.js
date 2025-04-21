@@ -239,6 +239,8 @@ function login() {
         loadAdminMatches('all').then(() => {
             updateEventTypeFilter('all'); 
         });
+        loadVenues();
+        updateEventTypes();
     } else {
         const toast = document.createElement('div');
         toast.className = 'toast toast-top toast-center';
@@ -316,6 +318,7 @@ async function loadMatches(sport = 'all', eventType = 'all') {
             const statusText = isToday ? 'Today' : formatDateShort(matchTime);
             
             const venueDisplay = match.venue ? `${match.venue.name}` : 'TBD';
+            const groupDisplay = match.group ? `<p class="text-lg text-gray-800">Group: ${match.group}</p>` : '';
             
             card.innerHTML = `
                 <div class="card-body p-6">
@@ -329,6 +332,7 @@ async function loadMatches(sport = 'all', eventType = 'all') {
                         <div>
                             <p class="text-lg font-medium text-gray-800">${formatTime(matchTime)}</p>
                             <p class="text-lg text-gray-800">${venueDisplay}</p>
+                            ${groupDisplay}
                         </div>
                     </div>
                 </div>
@@ -423,6 +427,7 @@ async function loadResults(sport = 'all', eventType = 'all') {
             ` : '';
             
             const venueDisplay = match.venue ? `${match.venue.name}` : 'TBD';
+            const groupDisplay = match.group ? `<p class="text-lg">Group: ${match.group}</p>` : '';
             
             card.innerHTML = `
                 <div class="card-body p-6 relative">
@@ -445,6 +450,7 @@ async function loadResults(sport = 'all', eventType = 'all') {
                     <p class="text-lg text-gray-800">${match.eventType}</p>
                     ${cardsDisplay}
                     <p class="text-lg text-gray-800">${venueDisplay}</p>
+                    ${groupDisplay}
                 </div>
             `;
             resultsList.appendChild(card);
@@ -518,30 +524,22 @@ function searchResults() {
 
 // Updated Filter Functions
 function filterMatches(sport, eventType = 'all') {
-    // Cập nhật địa điểm
     const locationElement = document.getElementById('location');
     if (locationElement) {
         locationElement.textContent = locations[sport] || "Select a sport to view location";
     }
 
-    // Quản lý trạng thái tab active
     updateTabStyles(sport);
-
-    // Tải danh sách trận đấu
     loadMatches(sport, eventType);
 }
 
 function filterResults(sport, eventType = 'all') {
-    // Cập nhật địa điểm
     const locationElement = document.getElementById('location');
     if (locationElement) {
         locationElement.textContent = locations[sport] || "Select a sport to view location";
     }
 
-    // Quản lý trạng thái tab active
     updateTabStyles(sport);
-
-    // Tải danh sách kết quả
     loadResults(sport, eventType);
 }
 
@@ -568,18 +566,23 @@ function updateEventTypes() {
     const scoreField = document.getElementById('score-field');
     const durationField = document.getElementById('duration-field');
     const cardsField = document.getElementById('cards-field');
+    const groupField = document.getElementById('group-field');
+
     if (sport === 'Athletics') {
         scoreField.classList.add('hidden');
         durationField.classList.remove('hidden');
         cardsField.classList.add('hidden');
+        groupField.classList.add('hidden');
     } else if (sport === 'Football') {
         scoreField.classList.remove('hidden');
         durationField.classList.add('hidden');
         cardsField.classList.remove('hidden');
+        groupField.classList.remove('hidden');
     } else {
         scoreField.classList.remove('hidden');
         durationField.classList.add('hidden');
         cardsField.classList.add('hidden');
+        groupField.classList.add('hidden');
     }
 }
 
@@ -622,9 +625,10 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
     const venue = document.getElementById('venue').value;
     const time = document.getElementById('time').value;
     const round = document.getElementById('round').value.trim();
+    const group = sport === 'Football' ? document.getElementById('group').value || null : null;
 
-    if (!sport || !eventType || !team1 || !team2 || !time || !round) {
-        showToast('Please fill in all required fields correctly. Round must be one of: Vòng Bảng 1, Vòng Bảng 2, Vòng Bảng 2, Vòng 1/8, Tứ Kết, Bán Kết, Chung Kết', 'warning');
+    if (!sport || !eventType || !team1 || (sport !== 'Athletics' && !team2) || !time || !round) {
+        showToast('Please fill in all required fields correctly. Round must be one of: Vòng Bảng 1, Vòng Bảng 2, Vòng Bảng 3, Vòng 1/8, Tứ Kết, Bán Kết, Chung Kết', 'warning');
         return;
     }
 
@@ -632,7 +636,7 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
         sport,
         eventType,
         team1,
-        team2,
+        team2: sport === 'Athletics' ? '' : team2,
         score: sport === 'Athletics' ? '' : score,
         duration: sport === 'Athletics' ? duration : '',
         yellowCards: { team1: yellowCards1, team2: yellowCards2 },
@@ -640,8 +644,33 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
         time: new Date(time).toISOString(),
         round,
         status: (sport === 'Athletics' ? duration : score) ? 'Completed' : 'Upcoming',
-        venue: venue || null
+        venue: venue || null,
+        group
     };
+
+    // Update group teams if necessary
+    if (sport === 'Football' && group) {
+        try {
+            const response = await fetch('/groups');
+            const data = await response.json();
+            const existingGroup = data.groups.find(g => g.name === group);
+            const teams = existingGroup ? [...new Set([...existingGroup.teams, team1, team2])] : [team1, team2];
+            const groupResponse = await fetch('/groups', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: group, teams })
+            });
+            const groupResult = await groupResponse.json();
+            if (!groupResult.success) {
+                showToast('Error updating group', 'error');
+                return;
+            }
+        } catch (err) {
+            console.error('Error updating group:', err);
+            showToast('Error updating group', 'error');
+            return;
+        }
+    }
 
     const matchId = document.getElementById('match-form').dataset.matchId;
 
@@ -667,6 +696,7 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
             loadAdminMatches(getActiveTab());
             document.getElementById('match-form').reset();
             delete document.getElementById('match-form').dataset.matchId;
+            updateEventTypes();
         } else {
             showToast(`Error: ${result.error || 'Failed to save match'}`, 'error');
         }
@@ -692,13 +722,12 @@ function editMatch(matchId) {
             document.getElementById('redCards1').value = match.redCards.team1;
             document.getElementById('redCards2').value = match.redCards.team2;
             document.getElementById('venue').value = match.venue?._id || '';
+            document.getElementById('group').value = match.group || '';
 
-            // Xử lý thời gian
             if (match.time) {
                 const date = new Date(match.time);
-                // Chuyển đổi thành định dạng YYYY-MM-DDThh:mm cho input datetime-local
                 const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
+                const month = String(date.getMonth() + 1).padStart(2, '0');
                 const day = String(date.getDate()).padStart(2, '0');
                 const hours = String(date.getHours()).padStart(2, '0');
                 const minutes = String(date.getMinutes()).padStart(2, '0');
@@ -761,9 +790,8 @@ async function loadAdminMatches(sport = 'all', eventType = 'all') {
             <p class="text-lg">Red: ${match.redCards.team1}-${match.redCards.team2}</p>
         ` : '';
         
-        const venueDisplay = match.venue ? 
-            `${match.venue.name}` : 
-            'No venue assigned';
+        const venueDisplay = match.venue ? `${match.venue.name}` : 'No venue assigned';
+        const groupDisplay = match.group ? `<p class="text-gray-800">Group: ${match.group}</p>` : '';
         
         card.innerHTML = `
             <div class="card-body p-4">
@@ -787,6 +815,7 @@ async function loadAdminMatches(sport = 'all', eventType = 'all') {
                         ${cardsDisplay}
                         <p class="text-gray-800">${venueDisplay}</p>
                         <p class="text-gray-800">${match.round}</p>
+                        ${groupDisplay}
                     </div>
                     <p class="font-bold text-right text-red-800 text-xl">${resultDisplay}</p>
                 </div>

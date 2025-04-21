@@ -18,6 +18,14 @@ const venueSchema = new mongoose.Schema({
 
 const Venue = mongoose.model('Venue', venueSchema);
 
+// Schema cho nhóm (bảng A, B, C, D, E, F) - Chỉ dành cho bóng đá
+const groupSchema = new mongoose.Schema({
+  name: { type: String, enum: ['A', 'B', 'C', 'D', 'E', 'F'], required: true },
+  teams: [{ type: String, required: true }]
+});
+
+const Group = mongoose.model('Group', groupSchema);
+
 // Schema cho trận đấu
 const matchSchema = new mongoose.Schema({
   sport: { type: String, required: true },
@@ -31,7 +39,8 @@ const matchSchema = new mongoose.Schema({
   time: { type: Date, required: true },
   round: { type: String, required: true },
   status: { type: String, enum: ['Upcoming', 'Completed'], default: 'Upcoming' },
-  venue: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue', default: null }
+  venue: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue', default: null },
+  group: { type: String, enum: ['A', 'B', 'C', 'D', 'E', 'F', null], default: null } // Thêm trường group
 });
 
 const Match = mongoose.model('Match', matchSchema);
@@ -62,6 +71,35 @@ app.post('/venues', async (req, res) => {
   }
 });
 
+// API lấy danh sách nhóm
+app.get('/groups', async (req, res) => {
+  try {
+    const groups = await Group.find();
+    res.json({ groups });
+  } catch (err) {
+    res.status(500).json({ error: 'Error fetching groups' });
+  }
+});
+
+// API thêm hoặc cập nhật nhóm
+app.post('/groups', async (req, res) => {
+  try {
+    const { name, teams } = req.body;
+    const existingGroup = await Group.findOne({ name });
+    if (existingGroup) {
+      existingGroup.teams = teams;
+      await existingGroup.save();
+      res.json({ success: true, group: existingGroup });
+    } else {
+      const group = new Group({ name, teams });
+      await group.save();
+      res.json({ success: true, group });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Error saving group' });
+  }
+});
+
 // API lấy danh sách trận đấu
 app.get('/matches', async (req, res) => {
   try {
@@ -82,13 +120,26 @@ app.post('/match', async (req, res) => {
       if (!mongoose.Types.ObjectId.isValid(matchData.venue)) {
         return res.status(400).json({ error: 'Invalid venue ID format' });
       }
-      // Kiểm tra xem venue có tồn tại trong database không
       const venueExists = await Venue.findById(matchData.venue);
       if (!venueExists) {
         return res.status(404).json({ error: 'Venue not found' });
       }
     } else {
-      matchData.venue = null; // Nếu không gửi venue, gán null
+      matchData.venue = null;
+    }
+
+    // Kiểm tra và xử lý trường group (chỉ cho bóng đá)
+    if (matchData.sport === 'Football' && matchData.group) {
+      const groupExists = await Group.findOne({ name: matchData.group });
+      if (!groupExists) {
+        return res.status(404).json({ error: 'Group not found' });
+      }
+      // Đảm bảo team1 và team2 thuộc group
+      if (!groupExists.teams.includes(matchData.team1) || !groupExists.teams.includes(matchData.team2)) {
+        return res.status(400).json({ error: 'Teams must belong to the selected group' });
+      }
+    } else {
+      matchData.group = null;
     }
 
     const match = new Match(matchData);
@@ -129,13 +180,25 @@ app.put('/match/:id', async (req, res) => {
       if (!mongoose.Types.ObjectId.isValid(matchData.venue)) {
         return res.status(400).json({ error: 'Invalid venue ID format' });
       }
-      // Kiểm tra xem venue có tồn tại trong database không
       const venueExists = await Venue.findById(matchData.venue);
       if (!venueExists) {
         return res.status(404).json({ error: 'Venue not found' });
       }
     } else {
-      matchData.venue = null; // Nếu không gửi venue, gán null
+      matchData.venue = null;
+    }
+
+    // Kiểm tra và xử lý trường group (chỉ cho bóng đá)
+    if (matchData.sport === 'Football' && matchData.group) {
+      const groupExists = await Group.findOne({ name: matchData.group });
+      if (!groupExists) {
+        return res.status(404).json({ error: 'Group not found' });
+      }
+      if (!groupExists.teams.includes(matchData.team1) || !groupExists.teams.includes(matchData.team2)) {
+        return res.status(400).json({ error: 'Teams must belong to the selected group' });
+      }
+    } else {
+      matchData.group = null;
     }
 
     const updatedMatch = await Match.findByIdAndUpdate(id, matchData, { new: true }).populate('venue');
@@ -163,6 +226,73 @@ app.delete('/match/:id', async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Error deleting match' });
+  }
+});
+
+// API lấy bảng xếp hạng theo nhóm
+app.get('/group-standings/:groupName', async (req, res) => {
+  try {
+    const { groupName } = req.params;
+    const group = await Group.findOne({ name: groupName });
+    if (!group) {
+      return res.status(404).json({ error: 'Group not found' });
+    }
+
+    const matches = await Match.find({ group: groupName, status: 'Completed', sport: 'Football' });
+    const standings = group.teams.map(team => ({
+      team,
+      played: 0,
+      won: 0,
+      drawn: 0,
+      lost: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      goalDifference: 0,
+      points: 0,
+      yellowCards: 0,
+      redCards: 0
+    }));
+
+    matches.forEach(match => {
+      const [score1, score2] = match.score.split('-').map(Number);
+      const team1 = standings.find(s => s.team === match.team1);
+      const team2 = standings.find(s => s.team === match.team2);
+
+      team1.played += 1;
+      team2.played += 1;
+      team1.goalsFor += score1;
+      team2.goalsFor += score2;
+      team1.goalsAgainst += score2;
+      team2.goalsAgainst += score1;
+      team1.yellowCards += match.yellowCards.team1;
+      team2.yellowCards += match.yellowCards.team2;
+      team1.redCards += match.redCards.team1;
+      team2.redCards += match.redCards.team2;
+
+      if (score1 > score2) {
+        team1.won += 1;
+        team1.points += 3;
+        team2.lost += 1;
+      } else if (score2 > score1) {
+        team2.won += 1;
+        team2.points += 3;
+        team1.lost += 1;
+      } else {
+        team1.drawn += 1;
+        team2.drawn += 1;
+        team1.points += 1;
+        team2.points += 1;
+      }
+
+      team1.goalDifference = team1.goalsFor - team1.goalsAgainst;
+      team2.goalDifference = team2.goalsFor - team2.goalsAgainst;
+    });
+
+    standings.sort((a, b) => b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor);
+
+    res.json({ standings });
+  } catch (err) {
+    res.status(500).json({ error: 'Error fetching group standings' });
   }
 });
 

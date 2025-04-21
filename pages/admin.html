@@ -27,6 +27,7 @@
                 <div class="hidden space-x-4" id="nav-links">
                     <a href="./../index.html" class="hidden md:inline-flex btn btn-ghost btn-sm">Schedule</a>
                     <a href="results.html" class="hidden md:inline-flex btn btn-ghost btn-sm">Results</a>
+                    <a href="groups.html" class="hidden md:inline-flex btn btn-ghost btn-sm">Groups</a>
                     <button onclick="logout()" class="hidden md:inline-flex btn btn-error btn-sm">Logout</button>
                 </div>
             </div>
@@ -35,6 +36,7 @@
             <div id="mobile-menu" class="hidden py-4 mt-2 space-y-2 md:hidden">
                 <a href="./../index.html" class="block px-4 py-2 text-white hover:bg-gray-700">Schedule</a>
                 <a href="results.html" class="block px-4 py-2 text-white hover:bg-gray-700">Results</a>
+                <a href="groups.html" class="block px-4 py-2 text-white hover:bg-gray-700">Groups</a>
                 <button onclick="logout()" class="block w-full px-4 py-2 text-left text-white hover:bg-red-600">Logout</button>
             </div>
         </div>
@@ -75,7 +77,7 @@
                     <form id="match-form">
                         <div class="mb-4 form-control">
                         <label class="label"><span class="font-medium label-text">Sport</span></label>
-                        <select id="sport" class="w-full select select-bordered" onchange="updateEventTypes()">
+                        <select id="sport" class="w-full select select-bordered" onchange="updateEventTypes(); toggleGroupField();">
                             <option value="Football">Football</option>
                             <option value="Badminton">Badminton</option>
                             <option value="Athletics">Athletics</option>
@@ -121,6 +123,18 @@
                         <div class="mb-4 form-control">
                         <label class="label"><span class="font-medium label-text">Venue</span></label>
                         <select id="venue" class="w-full select select-bordered"></select>
+                        </div>
+                        <div class="mb-4 form-control" id="group-field">
+                        <label class="label"><span class="font-medium label-text">Group</span></label>
+                        <select id="group" class="w-full select select-bordered">
+                            <option value="">Select Group</option>
+                            <option value="A">Group A</option>
+                            <option value="B">Group B</option>
+                            <option value="C">Group C</option>
+                            <option value="D">Group D</option>
+                            <option value="E">Group E</option>
+                            <option value="F">Group F</option>
+                        </select>
                         </div>
                         <div class="mb-4 form-control">
                         <label class="label"><span class="font-medium label-text">Round</span></label>

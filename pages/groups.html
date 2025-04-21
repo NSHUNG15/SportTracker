@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Standings</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.x/dist/full.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.x/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200">
+    <nav class="text-white bg-gray-800 shadow-lg">
+        <div class="container p-4 mx-auto">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold">SportTracker</h1>
+                <div class="hidden space-x-4 md:flex">
+                    <a href="./index.html" class="btn btn-ghost btn-sm">Schedule</a>
+                    <a href="results.html" class="btn btn-ghost btn-sm">Results</a>
+                    <a href="groups.html" class="btn btn-ghost btn-sm btn-active">Groups</a>
+                    <a href="admin.html" class="btn btn-ghost btn-sm">Admin</a>
+                </div>
+                <div class="block md:hidden">
+                    <button id="mobile-menu-button" class="btn btn-ghost">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="mobile-menu" class="hidden py-4 mt-2 space-y-2 md:hidden">
+                <a href="./index.html" class="block px-4 py-2 text-white hover:bg-gray-700">Schedule</a>
+                <a href="results.html" class="block px-4 py-2 text-white hover:bg-gray-700">Results</a>
+                <a href="groups.html" class="block px-4 py-2 text-white hover:bg-gray-700">Groups</a>
+                <a href="admin.html" class="block px-4 py-2 text-white hover:bg-gray-700">Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container p-6 mx-auto">
+        <div class="mb-10 text-center">
+            <h1 class="mb-2 text-4xl font-bold text-gray-800">Group Standings</h1>
+            <p class="text-gray-600">Football group standings for the tournament</p>
+        </div>
+
+        <div class="mb-6">
+            <select id="group-select" class="w-full select select-bordered md:w-1/4" onchange="loadGroupStandings()">
+                <option value="A">Group A</option>
+                <option value="B">Group B</option>
+                <option value="C">Group C</option>
+                <option value="D">Group D</option>
+                <option value="E">Group E</option>
+                <option value="F">Group F</option>
+            </select>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="table w-full bg-white rounded-lg shadow-md">
+                <thead>
+                    <tr class="text-left bg-gray-100">
+                        <th class="p-4">Team</th>
+                        <th class="p-4">Played</th>
+                        <th class="p-4">Won</th>
+                        <th class="p-4">Drawn</th>
+                        <th class="p-4">Lost</th>
+                        <th class="p-4">GF</th>
+                        <th class="p-4">GA</th>
+                        <th class="p-4">GD</th>
+                        <th class="p-4">Points</th>
+                        <th class="p-4">Yellow Cards</th>
+                        <th class="p-4">Red Cards</th>
+                    </tr>
+                </thead>
+                <tbody id="standings-table">
+                    <!-- Standings will be populated here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="no-standings" class="hidden p-6 text-center">
+            <div class="mb-3 text-4xl text-gray-300">📊</div>
+            <h3 class="mb-1 text-lg font-semibold">No standings available</h3>
+            <p class="text-gray-500">No completed matches for this group yet.</p>
+        </div>
+    </div>
+    <script src="./../be/script.js"></script>
+    <script src="./../be/groups.js"></script>
+</body>
+</html>
