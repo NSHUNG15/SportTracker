@@ -154,8 +154,8 @@ function getRoundPriority(round) {
     const roundOrder = {
         'Chung Kết': 10,
         'Tranh Hạng 3':9,
-        'Bán Kết': 8,
-        'Tứ Kết': 6,
+        'Bán Kết 1': 8, 'Bán Kết 2':8, 'Bán Kết': 8,
+        'Tứ Kết 1': 6, 'Tứ Kết 2' :6, 'Tứ Kết 3' :6, 'Tứ Kết 4' :6, 'Tứ Kết' :6,
         'Vòng 1/8': 4,
         'Vòng Bảng 3': 3, 
         'Vòng Bảng 2': 1, 
