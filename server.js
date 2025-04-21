@@ -132,11 +132,16 @@ app.post('/match', async (req, res) => {
     if (matchData.sport === 'Football' && matchData.group) {
       const groupExists = await Group.findOne({ name: matchData.group });
       if (!groupExists) {
-        return res.status(404).json({ error: 'Group not found' });
-      }
-      // Đảm bảo team1 và team2 thuộc group
-      if (!groupExists.teams.includes(matchData.team1) || !groupExists.teams.includes(matchData.team2)) {
-        return res.status(400).json({ error: 'Teams must belong to the selected group' });
+        // Tạo group mới nếu chưa tồn tại
+        const newGroup = new Group({
+          name: matchData.group,
+          teams: [matchData.team1, matchData.team2],
+        });
+        await newGroup.save();
+      } else {
+        // Cập nhật danh sách đội trong group
+        groupExists.teams = [...new Set([...groupExists.teams, matchData.team1, matchData.team2])];
+        await groupExists.save();
       }
     } else {
       matchData.group = null;
@@ -170,10 +175,17 @@ app.get('/match/:id', async (req, res) => {
 });
 
 // API cập nhật trận đấu
+// API cập nhật trận đấu
 app.put('/match/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const matchData = req.body;
+
+    // Lấy thông tin trận đấu hiện tại
+    const currentMatch = await Match.findById(id);
+    if (!currentMatch) {
+      return res.status(404).json({ error: 'Match not found' });
+    }
 
     // Kiểm tra và xử lý trường venue
     if (matchData.venue) {
@@ -195,16 +207,43 @@ app.put('/match/:id', async (req, res) => {
         return res.status(404).json({ error: 'Group not found' });
       }
       if (!groupExists.teams.includes(matchData.team1) || !groupExists.teams.includes(matchData.team2)) {
-        return res.status(400).json({ error: 'Teams must belong to the selected group' });
+        // Cập nhật danh sách đội trong group
+        groupExists.teams = [...new Set([...groupExists.teams, matchData.team1, matchData.team2])];
+        await groupExists.save();
       }
     } else {
       matchData.group = null;
     }
 
+    // Xử lý group cũ nếu group thay đổi hoặc bị xóa
+    if (currentMatch.group && (matchData.group !== currentMatch.group || !matchData.group)) {
+      const oldGroup = await Group.findOne({ name: currentMatch.group });
+      if (oldGroup) {
+        // Kiểm tra xem team1 hoặc team2 cũ có còn trong các trận đấu khác của group không
+        const remainingMatches = await Match.find({
+          group: currentMatch.group,
+          _id: { $ne: id },
+        });
+        const teamsInOtherMatches = [
+          ...new Set(
+            remainingMatches.flatMap((m) => [m.team1, m.team2])
+          ),
+        ];
+
+        // Cập nhật danh sách đội trong group cũ, chỉ giữ lại các đội còn trong các trận đấu khác
+        oldGroup.teams = oldGroup.teams.filter((team) =>
+          teamsInOtherMatches.includes(team)
+        );
+        await oldGroup.save();
+      }
+    }
+
+    // Cập nhật trận đấu
     const updatedMatch = await Match.findByIdAndUpdate(id, matchData, { new: true }).populate('venue');
     if (!updatedMatch) {
       return res.status(404).json({ error: 'Match not found' });
     }
+
     res.json({ success: true, match: updatedMatch });
   } catch (err) {
     console.error('Error updating match:', err);
@@ -219,12 +258,41 @@ app.delete('/match/:id', async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ error: 'Invalid match ID format' });
     }
-    const match = await Match.findByIdAndDelete(id);
+
+    // Lấy thông tin trận đấu trước khi xóa
+    const match = await Match.findById(id);
     if (!match) {
       return res.status(404).json({ error: 'Match not found' });
     }
+
+    // Xử lý group nếu trận đấu thuộc một group
+    if (match.group) {
+      const group = await Group.findOne({ name: match.group });
+      if (group) {
+        // Kiểm tra các trận đấu còn lại trong group
+        const remainingMatches = await Match.find({
+          group: match.group,
+          _id: { $ne: id },
+        });
+        const teamsInOtherMatches = [
+          ...new Set(
+            remainingMatches.flatMap((m) => [m.team1, m.team2])
+          ),
+        ];
+
+        // Cập nhật danh sách đội, chỉ giữ lại các đội còn trong các trận đấu khác
+        group.teams = group.teams.filter((team) =>
+          teamsInOtherMatches.includes(team)
+        );
+        await group.save();
+      }
+    }
+
+    // Xóa trận đấu
+    await Match.findByIdAndDelete(id);
     res.json({ success: true });
   } catch (err) {
+    console.error('Error deleting match:', err);
     res.status(500).json({ error: 'Error deleting match' });
   }
 });
