@@ -153,6 +153,7 @@ function updateTabStyles(activeFilter) {
 function getRoundPriority(round) {
     const roundOrder = {
         'Chung Kết': 10,
+        'Tranh Hạng 3':9,
         'Bán Kết': 8,
         'Tứ Kết': 6,
         'Vòng 1/8': 4,
@@ -628,7 +629,7 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
     const group = sport === 'Football' ? document.getElementById('group').value || null : null;
 
     if (!sport || !eventType || !team1 || (sport !== 'Athletics' && !team2) || !time || !round) {
-        showToast('Please fill in all required fields correctly. Round must be one of: Vòng Bảng 1, Vòng Bảng 2, Vòng Bảng 3, Vòng 1/8, Tứ Kết, Bán Kết, Chung Kết', 'warning');
+        showToast('Please fill in all required fields correctly. Round must be one of: Vòng Bảng 1, Vòng Bảng 2, Vòng Bảng 3, Vòng 1/8, Tứ Kết, Bán Kết, Tranh Hạng 3, Chung Kết', 'warning');
         return;
     }
 
