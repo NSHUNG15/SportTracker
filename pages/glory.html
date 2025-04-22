@@ -110,7 +110,7 @@
         // Fetch matches from server
         async function fetchMatches() {
             try {
-                const response = await fetch('http://localhost:8000/matches');
+                const response = await fetch('/matches');
                 return await response.json();
             } catch (error) {
                 console.error('Error fetching matches:', error);
