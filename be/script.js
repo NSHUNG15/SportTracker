@@ -153,9 +153,9 @@ function updateTabStyles(activeFilter) {
 function getRoundPriority(round) {
     const roundOrder = {
         'Chung Kết': 1000000,
-        'Tranh Hạng 3':99999,
-        'Bán Kết 1': 10, 'Bán Kết 2': 11 , 'Bán Kết': 12,
-        'Tứ Kết 1': 5, 'Tứ Kết 2' :6, 'Tứ Kết 3' :7, 'Tứ Kết 4' :8, 'Tứ Kết' :9,
+        'Tranh Hạng 3': 99999,
+        'Bán Kết 1': 10, 'Bán Kết 2': 11, 'Bán Kết': 12,
+        'Tứ Kết 1': 5, 'Tứ Kết 2': 6, 'Tứ Kết 3': 7, 'Tứ Kết 4': 8, 'Tứ Kết': 9,
         'Vòng 1/8': 4,
         'Vòng Bảng 3': 3, 
         'Vòng Bảng 2': 2, 
@@ -345,9 +345,6 @@ async function loadMatches(sport = 'all', eventType = 'all') {
         roundSection.appendChild(matchList);
         roundsContainer.appendChild(roundSection);
     });
-
-    updateTabStyles(sport);
-    updateEventTypeFilter(sport);
 }
 
 async function loadResults(sport = 'all', eventType = 'all') {
@@ -614,6 +611,16 @@ function updateEventTypeFilter(sport) {
     }
 }
 
+// Add event listener for form reset
+document.getElementById('match-form')?.addEventListener('reset', () => {
+    // Clear the matchId from the form's dataset
+    delete document.getElementById('match-form').dataset.matchId;
+    // Reset form fields
+    document.getElementById('match-form').reset();
+    // Update event types to ensure correct field visibility
+    updateEventTypes();
+});
+
 document.getElementById('match-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -853,11 +860,11 @@ window.addEventListener('DOMContentLoaded', () => {
         loadVenues();
     }
 
-    if (document.getElementById('rounds-container') && document.querySelector('h1.text-4xl').textContent.includes('Schedule')) {
+    if (document.getElementById('rounds-container') && document.querySelector('h1.text-4xl')?.textContent.includes('Schedule')) {
         console.log("Loading matches for schedule page");
         filterMatches('all');
     } else if (document.getElementById('results-container') || 
-               (document.getElementById('rounds-container') && document.querySelector('h1.text-4xl').textContent.includes('Results'))) {
+               (document.getElementById('rounds-container') && document.querySelector('h1.text-4xl')?.textContent.includes('Results'))) {
         console.log("Loading results page");
         filterResults('all');
     }
