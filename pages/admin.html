@@ -8,7 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.x/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="./../style.css">
     <link rel="stylesheet" href="./../animation.css">
-
 </head>
 <body class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200">
     <nav class="text-white bg-gray-800 shadow-lg" id="top-nav">
@@ -105,11 +104,11 @@
                         <input type="text" id="score" class="input input-bordered" placeholder="e.g., 2-1">
                         <span class="mt-1 text-xs text-gray-500">Leave blank for upcoming matches</span>
                         </div>
-                            <div class="mb-4 form-control" id="penalty-field">
-                                <label class="label"><span class="font-medium label-text">Penalty Score</span></label>
-                                <input type="text" id="penaltyScore" class="input input-bordered" placeholder="e.g., 3-4">
-                                <span class="mt-1 text-xs text-gray-500">Enter penalty score for draw matches (Football only)</span>
-                            </div>
+                        <div class="mb-4 form-control" id="penalty-field">
+                            <label class="label"><span class="font-medium label-text">Penalty Score</span></label>
+                            <input type="text" id="penaltyScore" class="input input-bordered" placeholder="e.g., 3-4">
+                            <span class="mt-1 text-xs text-gray-500">Enter penalty score for draw matches (Football only)</span>
+                        </div>
                         <div class="hidden mb-4 form-control" id="duration-field">
                         <label class="label"><span class="font-medium label-text">Duration</span></label>
                         <input type="text" id="duration" class="input input-bordered" placeholder="e.g., 4:32.15">
@@ -233,5 +232,7 @@
 
     <script src="./../be/script.js"></script>
     <script src="./../responsive.js"></script>
+    <script src="./../be/knockoutGenerator.js"></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'934fc35a9a6c4d9a',t:'MTc0NTQzNjQ5Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
