@@ -85,9 +85,9 @@ function formatDate(dateString) {
     return new Date(dateString).toLocaleString(undefined, options);
 }
 
-function getScoreDisplay(score) {
-    if (!score || score === '') return '<span class="badge badge-outline">Upcoming</span>';
-    return score;
+function getScoreDisplay(score, penaltyScore) {
+  if (!score || score === '') return '<span class="badge badge-outline">Upcoming</span>';
+  return penaltyScore ? `${score} (Pen ${penaltyScore})` : score;
 }
 
 function getSportIcon(sport) {
@@ -348,124 +348,139 @@ async function loadMatches(sport = 'all', eventType = 'all') {
 }
 
 async function loadResults(sport = 'all', eventType = 'all') {
-    const data = await fetchMatches();
-    const roundsContainer = document.getElementById('results-container');
-    const noResultsElement = document.getElementById('no-results');
-    
-    roundsContainer.innerHTML = '';
-    if (!data.matches || data.matches.length === 0) {
-        noResultsElement.classList.remove('hidden');
-        return;
-    }
+  const data = await fetchMatches();
+  const roundsContainer = document.getElementById('results-container');
+  const noResultsElement = document.getElementById('no-results');
+  
+  roundsContainer.innerHTML = '';
+  if (!data.matches || data.matches.length === 0) {
+    noResultsElement.classList.remove('hidden');
+    return;
+  }
 
-    let completedMatches = data.matches.filter(match => match.score || match.duration);
-    if (sport !== 'all') {
-        completedMatches = completedMatches.filter(match => match.sport === sport);
-    }
-    if (eventType !== 'all') {
-        completedMatches = completedMatches.filter(match => match.eventType === eventType);
-    }
+  let completedMatches = data.matches.filter(match => match.score || match.duration);
+  if (sport !== 'all') {
+    completedMatches = completedMatches.filter(match => match.sport === sport);
+  }
+  if (eventType !== 'all') {
+    completedMatches = completedMatches.filter(match => match.eventType === eventType);
+  }
+  
+  const matchesByRound = {};
+  completedMatches.forEach(match => {
+    const roundText = match.round;
+    if (!matchesByRound[roundText]) matchesByRound[roundText] = [];
+    matchesByRound[roundText].push(match);
+  });
+
+  if (Object.keys(matchesByRound).length === 0) {
+    noResultsElement.classList.remove('hidden');
+    return;
+  }
+  noResultsElement.classList.add('hidden');
+
+  const sortedRounds = Object.keys(matchesByRound).sort((a, b) => getRoundPriority(b) - getRoundPriority(a));
+  
+  sortedRounds.forEach(round => {
+    const roundSection = document.createElement('div');
+    roundSection.className = 'mb-8';
     
-    const matchesByRound = {};
-    completedMatches.forEach(match => {
-        const roundText = match.round;
-        if (!matchesByRound[roundText]) matchesByRound[roundText] = [];
-        matchesByRound[roundText].push(match);
+    const roundTitle = document.createElement('h1');
+    roundTitle.className = 'mb-4 text-2xl font-bold text-indigo-900';
+    roundTitle.textContent = round;
+    roundSection.appendChild(roundTitle);
+
+    const resultsList = document.createElement('div');
+    resultsList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3';
+    
+    matchesByRound[round].sort((a, b) => new Date(b.time) - new Date(a.time));
+    matchesByRound[round].forEach(match => {
+      const card = document.createElement('div');
+      card.className = 'transition-shadow duration-300 bg-white shadow-lg card hover:shadow-xl';
+      
+      let resultBadge = '';
+      if (match.sport === 'Athletics') {
+        resultBadge = `<div class="absolute top-0 right-0 m-2">
+          <span class="badge badge-success p-3">${match.team1} - ${match.duration}</span>
+        </div>`;
+      } else if (match.score) {
+        const scores = match.score.split('-').map(s => parseInt(s.trim()));
+        if (scores[0] > scores[1]) {
+          resultBadge = `<div class="absolute top-0 right-0 m-2">
+            <span class="badge badge-success text-lg p-3">${match.team1} WIN</span>
+          </div>`;
+        } else if (scores[0] < scores[1]) {
+          resultBadge = `<div class="absolute top-0 right-0 m-2">
+            <span class="badge badge-success p-3 text-lg">${match.team2} WIN</span>
+          </div>`;
+        } else if (match.penaltyScore) {
+          const penScores = match.penaltyScore.split('-').map(s => parseInt(s.trim()));
+          if (penScores[0] > penScores[1]) {
+            resultBadge = `<div class="absolute top-0 right-0 m-2">
+              <span class="badge badge-success text-lg p-3">${match.team1} WIN (Pen ${match.penaltyScore})</span>
+            </div>`;
+          } else if (penScores[1] > penScores[0]) {
+            resultBadge = `<div class="absolute top-0 right-0 m-2">
+              <span class="badge badge-success text-lg p-3">${match.team2} WIN (Pen ${match.penaltyScore})</span>
+            </div>`;
+          } else {
+            resultBadge = `<div class="absolute top-0 right-0 m-2">
+              <span class="badge badge-error text-lg p-3">Invalid penalty score</span>
+            </div>`;
+          }
+        } else {
+          resultBadge = `<div class="absolute top-0 right-0 m-2">
+            <span class="badge badge-info text-lg p-3">Draw</span>
+          </div>`;
+        }
+      }
+
+      const cardsDisplay = match.sport === 'Football' ? ` 
+        <p class="text-lg">Yellow: ${match.yellowCards.team1}-${match.yellowCards.team2}</p>
+        <p class="text-lg">Red: ${match.redCards.team1}-${match.redCards.team2}</p>
+      ` : '';
+      
+      const venueDisplay = match.venue ? `${match.venue.name}` : 'TBD';
+      const groupDisplay = match.group ? `<p class="text-lg">Group: ${match.group}</p>` : '';
+      const teamDisplay = match.sport === 'Athletics' ? 
+        `<p class="font-semibold text-xl">${match.team1}</p>` :
+        `
+          <div class="text-center flex-1">
+            <p class="font-semibold text-xl">${match.team1}</p>
+          </div>
+          <div class="text-center px-4">
+            <p class="text-2xl font-bold">${getScoreDisplay(match.score, match.penaltyScore)}</p>
+          </div>
+          <div class="text-center flex-1">
+            <p class="font-semibold text-xl">${match.team2}</p>
+          </div>
+        `;
+      
+      card.innerHTML = `
+        <div class="card-body p-6 relative">
+          ${resultBadge}
+          <div class="flex justify-between items-center mb-3 mt-5">
+            <span class="badge badge-outline text-lg">${formatDate(match.time)}</span>
+            <span class="text-2xl" title="${match.sport}">${getSportIcon(match.sport)}</span>
+          </div>
+          <div class="flex justify-between items-center my-4">
+            ${teamDisplay}
+          </div>
+          <p class="text-lg text-gray-800">${match.eventType}</p>
+          ${cardsDisplay}
+          <p class="text-lg text-gray-800">${venueDisplay}</p>
+          ${groupDisplay}
+        </div>
+      `;
+      resultsList.appendChild(card);
     });
 
-    if (Object.keys(matchesByRound).length === 0) {
-        noResultsElement.classList.remove('hidden');
-        return;
-    }
-    noResultsElement.classList.add('hidden');
+    roundSection.appendChild(resultsList);
+    roundsContainer.appendChild(roundSection);
+  });
 
-    const sortedRounds = Object.keys(matchesByRound).sort((a, b) => getRoundPriority(b) - getRoundPriority(a));
-    
-    sortedRounds.forEach(round => {
-        const roundSection = document.createElement('div');
-        roundSection.className = 'mb-8';
-        
-        const roundTitle = document.createElement('h1');
-        roundTitle.className = 'mb-4 text-2xl font-bold text-indigo-900';
-        roundTitle.textContent = round;
-        roundSection.appendChild(roundTitle);
-
-        const resultsList = document.createElement('div');
-        resultsList.className = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3';
-        
-        matchesByRound[round].sort((a, b) => new Date(b.time) - new Date(a.time));
-        matchesByRound[round].forEach(match => {
-            const card = document.createElement('div');
-            card.className = 'transition-shadow duration-300 bg-white shadow-lg card hover:shadow-xl';
-            
-            let resultBadge = '';
-            if (match.sport === 'Athletics') {
-                resultBadge = `<div class="absolute top-0 right-0 m-2">
-                    <span class="badge badge-success p-3">${match.team1} - ${match.duration}</span>
-                </div>`;
-            } else if (match.score) {
-                const scores = match.score.split('-').map(s => parseInt(s.trim()));
-                if (scores[0] > scores[1]) {
-                    resultBadge = `<div class="absolute top-0 right-0 m-2">
-                        <span class="badge badge-success text-lg p-3">${match.team1} WIN</span>
-                    </div>`;
-                } else if (scores[0] < scores[1]) {
-                    resultBadge = `<div class="absolute top-0 right-0 m-2">
-                        <span class="badge badge-success p-3 text-lg">${match.team2} WIN</span>
-                    </div>`;
-                } else {
-                    resultBadge = `<div class="absolute top-0 right-0 m-2">
-                        <span class="badge badge-info text-lg p-3">Draw</span>
-                    </div>`;
-                }
-            }
-
-            const cardsDisplay = match.sport === 'Football' ? `
-                <p class="text-lg">Yellow: ${match.yellowCards.team1}-${match.yellowCards.team2}</p>
-                <p class="text-lg">Red: ${match.redCards.team1}-${match.redCards.team2}</p>
-            ` : '';
-            
-            const venueDisplay = match.venue ? `${match.venue.name}` : 'TBD';
-            const groupDisplay = match.group ? `<p class="text-lg">Group: ${match.group}</p>` : '';
-            const teamDisplay = match.sport === 'Athletics' ? 
-                `<p class="font-semibold text-xl">${match.team1}</p>` :
-                `
-                    <div class="text-center flex-1">
-                        <p class="font-semibold text-xl">${match.team1}</p>
-                    </div>
-                    <div class="text-center px-4">
-                        <p class="text-2xl font-bold">${match.score}</p>
-                    </div>
-                    <div class="text-center flex-1">
-                        <p class="font-semibold text-xl">${match.team2}</p>
-                    </div>
-                `;
-            
-            card.innerHTML = `
-                <div class="card-body p-6 relative">
-                    ${resultBadge}
-                    <div class="flex justify-between items-center mb-3 mt-5">
-                        <span class="badge badge-outline text-lg">${formatDate(match.time)}</span>
-                        <span class="text-2xl" title="${match.sport}">${getSportIcon(match.sport)}</span>
-                    </div>
-                    <div class="flex justify-between items-center my-4">
-                        ${teamDisplay}
-                    </div>
-                    <p class="text-lg text-gray-800">${match.eventType}</p>
-                    ${cardsDisplay}
-                    <p class="text-lg text-gray-800">${venueDisplay}</p>
-                    ${groupDisplay}
-                </div>
-            `;
-            resultsList.appendChild(card);
-        });
-
-        roundSection.appendChild(resultsList);
-        roundsContainer.appendChild(roundSection);
-    });
-
-    updateTabStyles(sport);
-    updateEventTypeFilter(sport);
+  updateTabStyles(sport);
+  updateEventTypeFilter(sport);
 }
 
 function searchMatches() {
@@ -568,6 +583,7 @@ function updateEventTypes() {
     });
 
     const scoreField = document.getElementById('score-field');
+    const penaltyField = document.getElementById('penalty-field');
     const durationField = document.getElementById('duration-field');
     const cardsField = document.getElementById('cards-field');
     const groupField = document.getElementById('group-field');
@@ -575,15 +591,24 @@ function updateEventTypes() {
 
     if (sport === 'Athletics') {
         scoreField.classList.add('hidden');
+        penaltyField.classList.add('hidden');
         durationField.classList.remove('hidden');
         cardsField.classList.add('hidden');
         groupField.classList.add('hidden');
         team2Field.classList.add('hidden');
+    } else if (sport === 'Football') {
+        scoreField.classList.remove('hidden');
+        penaltyField.classList.remove('hidden');
+        durationField.classList.add('hidden');
+        cardsField.classList.remove('hidden');
+        groupField.classList.remove('hidden');
+        team2Field.classList.remove('hidden');
     } else {
         scoreField.classList.remove('hidden');
+        penaltyField.classList.add('hidden');
         durationField.classList.add('hidden');
-        cardsField.classList.toggle('hidden', sport !== 'Football');
-        groupField.classList.toggle('hidden', sport !== 'Football');
+        cardsField.classList.add('hidden');
+        groupField.classList.add('hidden');
         team2Field.classList.remove('hidden');
     }
 }
@@ -629,6 +654,7 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
     const team1 = document.getElementById('team1').value.trim();
     const team2 = sport === 'Athletics' ? '' : document.getElementById('team2').value.trim();
     const score = document.getElementById('score').value.trim();
+    const penaltyScore = sport === 'Football' ? document.getElementById('penaltyScore').value.trim() : '';
     const duration = document.getElementById('duration').value.trim();
     const yellowCards1 = parseInt(document.getElementById('yellowCards1').value) || 0;
     const yellowCards2 = parseInt(document.getElementById('yellowCards2').value) || 0;
@@ -650,12 +676,22 @@ document.getElementById('match-form')?.addEventListener('submit', async (e) => {
         return;
     }
 
+    // Validate penalty score for football knockout matches
+    if (sport === 'Football' && score && ['Vòng 1/8', 'Tứ Kết', 'Bán Kết', 'Chung Kết'].includes(round)) {
+        const scores = score.split('-').map(s => parseInt(s.trim()));
+        if (scores[0] === scores[1] && !penaltyScore) {
+            showToast('Penalty score is required for draw matches in knockout rounds', 'warning');
+            return;
+        }
+    }
+
     const match = {
         sport,
         eventType,
         team1,
         team2,
         score: sport === 'Athletics' ? '' : score,
+        penaltyScore,
         duration: sport === 'Athletics' ? duration : '',
         yellowCards: { team1: yellowCards1, team2: yellowCards2 },
         redCards: { team1: redCards1, team2: redCards2 },
@@ -734,6 +770,7 @@ function editMatch(matchId) {
             document.getElementById('team1').value = match.team1;
             document.getElementById('team2').value = match.team2 || '';
             document.getElementById('score').value = match.score || '';
+            document.getElementById('penaltyScore').value = match.penaltyScore || '';
             document.getElementById('duration').value = match.duration || '';
             document.getElementById('yellowCards1').value = match.yellowCards.team1;
             document.getElementById('yellowCards2').value = match.yellowCards.team2;
@@ -769,86 +806,107 @@ function editMatch(matchId) {
 }
 
 async function loadAdminMatches(sport = 'all', eventType = 'all') {
-    const data = await fetchMatches();
-    const matchList = document.getElementById('admin-match-list');
-    const noMatchesElement = document.getElementById('no-admin-matches');
+  const data = await fetchMatches();
+  const matchList = document.getElementById('admin-match-list');
+  const noMatchesElement = document.getElementById('no-admin-matches');
+  
+  matchList.innerHTML = '';
+  if (!data.matches || data.matches.length === 0) {
+    noMatchesElement.classList.remove('hidden');
+    return;
+  }
+
+  let filteredMatches = [...data.matches];
+  if (sport !== 'all') {
+    filteredMatches = filteredMatches.filter(match => match.sport === sport);
+  }
+  if (eventType !== 'all') {
+    filteredMatches = filteredMatches.filter(match => match.eventType === eventType);
+  }
+  
+  filteredMatches.sort((a, b) => getRoundPriority(b.round) - getRoundPriority(a.round) || new Date(b.time) - new Date(a.time));
+
+  if (filteredMatches.length === 0) {
+    noMatchesElement.classList.remove('hidden');
+    return;
+  }
+  noMatchesElement.classList.add('hidden');
+
+  filteredMatches.forEach(match => {
+    const card = document.createElement('div');
+    card.className = 'transition-colors duration-200 bg-white border border-gray-200 card hover:border-gray-300';
     
-    matchList.innerHTML = '';
-    if (!data.matches || data.matches.length === 0) {
-        noMatchesElement.classList.remove('hidden');
-        return;
-    }
-
-    let filteredMatches = [...data.matches];
-    if (sport !== 'all') {
-        filteredMatches = filteredMatches.filter(match => match.sport === sport);
-    }
-    if (eventType !== 'all') {
-        filteredMatches = filteredMatches.filter(match => match.eventType === eventType);
+    const hasResult = match.score || match.duration;
+    const statusClass = hasResult ? 'badge-success' : 'badge-warning';
+    const statusText = hasResult ? 'Completed' : 'Upcoming';
+    
+    let resultDisplay = '';
+    if (match.sport === 'Athletics') {
+      resultDisplay = match.duration ? `<span class="font-bold">${match.duration}</span>` : '<span class="badge badge-outline">Upcoming</span>';
+    } else if (match.score) {
+      const scores = match.score.split('-').map(s => parseInt(s.trim()));
+      if (scores[0] > scores[1]) {
+        resultDisplay = `<span class="font-bold">${match.score} (${match.team1} WIN)</span>`;
+      } else if (scores[0] < scores[1]) {
+        resultDisplay = `<span class="font-bold">${match.score} (${match.team2} WIN)</span>`;
+      } else if (match.penaltyScore) {
+        const penScores = match.penaltyScore.split('-').map(s => parseInt(s.trim()));
+        if (penScores[0] > penScores[1]) {
+          resultDisplay = `<span class="font-bold">${match.score} (Pen ${match.penaltyScore}, ${match.team1} WIN)</span>`;
+        } else if (penScores[1] > penScores[0]) {
+          resultDisplay = `<span class="font-bold">${match.score} (Pen ${match.penaltyScore}, ${match.team2} WIN)</span>`;
+        } else {
+          resultDisplay = `<span class="font-bold">${match.score} (Invalid Pen)</span>`;
+        }
+      } else {
+        resultDisplay = `<span class="font-bold">${match.score} (Draw)</span>`;
+      }
+    } else {
+      resultDisplay = '<span class="badge badge-outline">Upcoming</span>';
     }
     
-    filteredMatches.sort((a, b) => getRoundPriority(b.round) - getRoundPriority(a.round) || new Date(b.time) - new Date(a.time));
+    const cardsDisplay = match.sport === 'Football' ? `
+      <p class="text-lg">Yellow: ${match.yellowCards.team1}-${match.yellowCards.team2}</p>
+      <p class="text-lg">Red: ${match.redCards.team1}-${match.redCards.team2}</p>
+    ` : '';
+    
+    const venueDisplay = match.venue ? `${match.venue.name}` : 'No venue assigned';
+    const groupDisplay = match.group ? `<p class="text-gray-800">Group: ${match.group}</p>` : '';
+    const teamDisplay = match.sport === 'Athletics' ? match.team1 : `${match.team1} vs ${match.team2}`;
+    
+    card.innerHTML = `
+      <div class="card-body p-4">
+        <div class="flex justify-between items-center mb-2">
+          <div>
+            <span class="badge ${statusClass} mr-2">${statusText}</span>
+            <span class="badge badge-outline">${match.sport} - ${match.eventType}</span>
+          </div>
+          <div class="dropdown dropdown-end">
+            <div tabindex="0" class="btn btn-ghost btn-xs">⋮</div>
+            <ul tabindex="0" class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-32">
+              <li><a onclick="editMatch('${match._id}')">Edit</a></li>
+              <li><a onclick="deleteMatch('${match._id}')" class="text-error">Delete</a></li>
+            </ul>
+          </div>
+        </div>
+        <h3 class="font-medium text-gray-800">${teamDisplay}</h3>
+        <div class="flex justify-between items-center mt-2 text-lg">
+          <div>
+            <p class="text-gray-800">${formatDate(match.time)}</p>
+            ${cardsDisplay}
+            <p class="text-gray-800">${venueDisplay}</p>
+            <p class="text-gray-800">${match.round}</p>
+            ${groupDisplay}
+          </div>
+          <p class="font-bold text-right text-red-800 text-xl">${resultDisplay}</p>
+        </div>
+      </div>
+    `;
+    matchList.appendChild(card);
+  });
 
-    if (filteredMatches.length === 0) {
-        noMatchesElement.classList.remove('hidden');
-        return;
-    }
-    noMatchesElement.classList.add('hidden');
-
-    filteredMatches.forEach(match => {
-        const card = document.createElement('div');
-        card.className = 'transition-colors duration-200 bg-white border border-gray-200 card hover:border-gray-300';
-        
-        const hasResult = match.score || match.duration;
-        const statusClass = hasResult ? 'badge-success' : 'badge-warning';
-        const statusText = hasResult ? 'Completed' : 'Upcoming';
-        
-        const resultDisplay = match.sport === 'Athletics' ? 
-            (match.duration ? `<span class="font-bold">${match.duration}</span>` : '<span class="badge badge-outline">Upcoming</span>') : 
-            (match.score ? `<span class="font-bold">${match.score}</span>` : '<span class="badge badge-outline">Upcoming</span>');
-        
-        const cardsDisplay = match.sport === 'Football' ? `
-            <p class="text-lg">Yellow: ${match.yellowCards.team1}-${match.yellowCards.team2}</p>
-            <p class="text-lg">Red: ${match.redCards.team1}-${match.redCards.team2}</p>
-        ` : '';
-        
-        const venueDisplay = match.venue ? `${match.venue.name}` : 'No venue assigned';
-        const groupDisplay = match.group ? `<p class="text-gray-800">Group: ${match.group}</p>` : '';
-        const teamDisplay = match.sport === 'Athletics' ? match.team1 : `${match.team1} vs ${match.team2}`;
-        
-        card.innerHTML = `
-            <div class="card-body p-4">
-                <div class="flex justify-between items-center mb-2">
-                    <div>
-                        <span class="badge ${statusClass} mr-2">${statusText}</span>
-                        <span class="badge badge-outline">${match.sport} - ${match.eventType}</span>
-                    </div>
-                    <div class="dropdown dropdown-end">
-                        <div tabindex="0" class="btn btn-ghost btn-xs">⋮</div>
-                        <ul tabindex="0" class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-32">
-                            <li><a onclick="editMatch('${match._id}')">Edit</a></li>
-                            <li><a onclick="deleteMatch('${match._id}')" class="text-error">Delete</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <h3 class="font-medium text-gray-800">${teamDisplay}</h3>
-                <div class="flex justify-between items-center mt-2 text-lg">
-                    <div>
-                        <p class="text-gray-800">${formatDate(match.time)}</p>
-                        ${cardsDisplay}
-                        <p class="text-gray-800">${venueDisplay}</p>
-                        <p class="text-gray-800">${match.round}</p>
-                        ${groupDisplay}
-                    </div>
-                    <p class="font-bold text-right text-red-800 text-xl">${resultDisplay}</p>
-                </div>
-            </div>
-        `;
-        matchList.appendChild(card);
-    });
-
-    updateTabStyles(sport);
-    updateEventTypeFilter(sport);
+  updateTabStyles(sport);
+  updateEventTypeFilter(sport);
 }
 
 // Khởi tạo khi tải trang

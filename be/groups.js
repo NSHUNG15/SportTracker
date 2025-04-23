@@ -20,17 +20,19 @@ async function loadGroupStandings() {
         data.standings.forEach(standing => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td class="p-4">${standing.team}</td>
-                <td class="p-4">${standing.played}</td>
-                <td class="p-4">${standing.won}</td>
-                <td class="p-4">${standing.drawn}</td>
-                <td class="p-4">${standing.lost}</td>
-                <td class="p-4">${standing.goalsFor}</td>
-                <td class="p-4">${standing.goalsAgainst}</td>
-                <td class="p-4">${standing.goalDifference}</td>
-                <td class="p-4">${standing.points}</td>
-                <td class="p-4">${standing.yellowCards}</td>
-                <td class="p-4">${standing.redCards}</td>
+                <td class="p-4 text-center">${standing.team}</td>
+                <td class="p-4 text-center">${standing.played}</td>
+                <td class="p-4 text-center">${standing.won}</td>
+                <td class="p-4 text-center">${standing.drawn}</td>
+                <td class="p-4 text-center">${standing.lost}</td>
+                <td class="p-4 text-center">${standing.goalsFor}</td>
+                <td class="p-4 text-center">${standing.goalsAgainst}</td>
+                <td class="p-4 text-center">${standing.goalDifference}</td>
+                <td class="p-4 text-center">${standing.openingAbsencePenalty}</td>
+                <td class="p-4 text-center">${standing.points}</td>
+                <td class="p-4 text-center">${standing.yellowCards}</td>
+                <td class="p-4 text-center">${standing.redCards}</td>
+                
             `;
             standingsTable.appendChild(row);
         });

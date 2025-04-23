@@ -18,7 +18,7 @@ const venueSchema = new mongoose.Schema({
 
 const Venue = mongoose.model('Venue', venueSchema);
 
-// Schema cho nhóm (bảng A, B, C, D, E, F) - Chỉ dành cho bóng đá
+// Schema cho nhóm (bảng A, B, C, D, E, F)
 const groupSchema = new mongoose.Schema({
   name: { type: String, enum: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'], required: true },
   teams: [{ type: String, required: true }]
@@ -31,8 +31,9 @@ const matchSchema = new mongoose.Schema({
   sport: { type: String, required: true },
   eventType: { type: String, required: true },
   team1: { type: String, required: true },
-  team2: { type: String, default: '' }, // Không yêu cầu team2
+  team2: { type: String, default: '' },
   score: { type: String, default: '' },
+  penaltyScore: { type: String, default: '' }, // Thêm trường penaltyScore
   duration: { type: String, default: '' },
   yellowCards: { team1: { type: Number, default: 0 }, team2: { type: Number, default: 0 } },
   redCards: { team1: { type: Number, default: 0 }, team2: { type: Number, default: 0 } },
@@ -115,7 +116,6 @@ app.post('/match', async (req, res) => {
   try {
     const matchData = req.body;
 
-    // Kiểm tra và xử lý trường venue
     if (matchData.venue) {
       if (!mongoose.Types.ObjectId.isValid(matchData.venue)) {
         return res.status(400).json({ error: 'Invalid venue ID format' });
@@ -128,23 +128,35 @@ app.post('/match', async (req, res) => {
       matchData.venue = null;
     }
 
-    // Kiểm tra và xử lý trường group (chỉ cho bóng đá)
+    // Kiểm tra nếu là trận bóng đá và có nhóm
     if (matchData.sport === 'Football' && matchData.group) {
       const groupExists = await Group.findOne({ name: matchData.group });
       if (!groupExists) {
-        // Tạo group mới nếu chưa tồn tại
         const newGroup = new Group({
           name: matchData.group,
-          teams: [matchData.team1, matchData.team2],
+          teams: [matchData.team1, matchData.team2]
         });
         await newGroup.save();
       } else {
-        // Cập nhật danh sách đội trong group
         groupExists.teams = [...new Set([...groupExists.teams, matchData.team1, matchData.team2])];
         await groupExists.save();
       }
     } else {
       matchData.group = null;
+    }
+
+    // Kiểm tra nếu trận đấu hòa và có penalty score
+    if (matchData.sport === 'Football' && matchData.score && ['Vòng 1/8', 'Tứ Kết', 'Bán Kết', 'Chung Kết'].includes(matchData.round)) {
+      const scores = matchData.score.split('-').map(s => parseInt(s.trim()));
+      if (scores[0] === scores[1] && !matchData.penaltyScore) {
+        return res.status(400).json({ error: 'Penalty score is required for draw matches in knockout rounds' });
+      }
+      if (scores[0] === scores[1] && matchData.penaltyScore) {
+        const penScores = matchData.penaltyScore.split('-').map(s => parseInt(s.trim()));
+        if (penScores[0] === penScores[1]) {
+          return res.status(400).json({ error: 'Penalty score cannot result in a draw' });
+        }
+      }
     }
 
     const match = new Match(matchData);
@@ -180,13 +192,11 @@ app.put('/match/:id', async (req, res) => {
     const { id } = req.params;
     const matchData = req.body;
 
-    // Lấy thông tin trận đấu hiện tại
     const currentMatch = await Match.findById(id);
     if (!currentMatch) {
       return res.status(404).json({ error: 'Match not found' });
     }
 
-    // Kiểm tra và xử lý trường venue
     if (matchData.venue) {
       if (!mongoose.Types.ObjectId.isValid(matchData.venue)) {
         return res.status(400).json({ error: 'Invalid venue ID format' });
@@ -199,14 +209,12 @@ app.put('/match/:id', async (req, res) => {
       matchData.venue = null;
     }
 
-    // Kiểm tra và xử lý trường group (chỉ cho bóng đá)
     if (matchData.sport === 'Football' && matchData.group) {
       const groupExists = await Group.findOne({ name: matchData.group });
       if (!groupExists) {
         return res.status(404).json({ error: 'Group not found' });
       }
       if (!groupExists.teams.includes(matchData.team1) || (matchData.team2 && !groupExists.teams.includes(matchData.team2))) {
-        // Cập nhật danh sách đội trong group
         groupExists.teams = [...new Set([...groupExists.teams, matchData.team1, matchData.team2])].filter(Boolean);
         await groupExists.save();
       }
@@ -214,22 +222,32 @@ app.put('/match/:id', async (req, res) => {
       matchData.group = null;
     }
 
-    // Xử lý group cũ nếu group thay đổi hoặc bị xóa
+    // Kiểm tra nếu trận đấu hòa và có penalty score
+    if (matchData.sport === 'Football' && matchData.score && ['Vòng 1/8', 'Tứ Kết', 'Bán Kết', 'Chung Kết'].includes(matchData.round)) {
+      const scores = matchData.score.split('-').map(s => parseInt(s.trim()));
+      if (scores[0] === scores[1] && !matchData.penaltyScore) {
+        return res.status(400).json({ error: 'Penalty score is required for draw matches in knockout rounds' });
+      }
+      if (scores[0] === scores[1] && matchData.penaltyScore) {
+        const penScores = matchData.penaltyScore.split('-').map(s => parseInt(s.trim()));
+        if (penScores[0] === penScores[1]) {
+          return res.status(400).json({ error: 'Penalty score cannot result in a draw' });
+        }
+      }
+    }
+
     if (currentMatch.group && (matchData.group !== currentMatch.group || !matchData.group)) {
       const oldGroup = await Group.findOne({ name: currentMatch.group });
       if (oldGroup) {
-        // Kiểm tra xem team1 hoặc team2 cũ có còn trong các trận đấu khác của group không
         const remainingMatches = await Match.find({
           group: currentMatch.group,
-          _id: { $ne: id },
+          _id: { $ne: id }
         });
         const teamsInOtherMatches = [
           ...new Set(
             remainingMatches.flatMap((m) => [m.team1, m.team2])
-          ),
+          )
         ];
-
-        // Cập nhật danh sách đội trong group cũ
         oldGroup.teams = oldGroup.teams.filter((team) =>
           teamsInOtherMatches.includes(team)
         );
@@ -237,7 +255,6 @@ app.put('/match/:id', async (req, res) => {
       }
     }
 
-    // Cập nhật trận đấu
     const updatedMatch = await Match.findByIdAndUpdate(id, matchData, { new: true }).populate('venue');
     if (!updatedMatch) {
       return res.status(404).json({ error: 'Match not found' });
@@ -258,28 +275,23 @@ app.delete('/match/:id', async (req, res) => {
       return res.status(400).json({ error: 'Invalid match ID format' });
     }
 
-    // Lấy thông tin trận đấu trước khi xóa
     const match = await Match.findById(id);
     if (!match) {
       return res.status(404).json({ error: 'Match not found' });
     }
 
-    // Xử lý group nếu trận đấu thuộc một group
     if (match.group) {
       const group = await Group.findOne({ name: match.group });
       if (group) {
-        // Kiểm tra các trận đấu còn lại trong group
         const remainingMatches = await Match.find({
           group: match.group,
-          _id: { $ne: id },
+          _id: { $ne: id }
         });
         const teamsInOtherMatches = [
           ...new Set(
             remainingMatches.flatMap((m) => [m.team1, m.team2])
-          ),
+          )
         ];
-
-        // Cập nhật danh sách đội
         group.teams = group.teams.filter((team) =>
           teamsInOtherMatches.includes(team)
         );
@@ -287,7 +299,6 @@ app.delete('/match/:id', async (req, res) => {
       }
     }
 
-    // Xóa trận đấu
     await Match.findByIdAndDelete(id);
     res.json({ success: true });
   } catch (err) {
@@ -306,6 +317,14 @@ app.get('/group-standings/:groupName', async (req, res) => {
     }
 
     const matches = await Match.find({ group: groupName, status: 'Completed', sport: 'Football' });
+    // Danh sách đội bị phạt vắng khai mạc
+    const penaltyTeams = {
+      K27TPM11: -1,
+      K27TPM3: -1,
+      K28TPM17: -1,
+      K29TPM10: -1
+    };
+
     const standings = group.teams.map(team => ({
       team,
       played: 0,
@@ -317,7 +336,8 @@ app.get('/group-standings/:groupName', async (req, res) => {
       goalDifference: 0,
       points: 0,
       yellowCards: 0,
-      redCards: 0
+      redCards: 0,
+      openingAbsencePenalty: penaltyTeams[team] || 0 // Gán -1 cho đội bị phạt, 0 cho đội khác
     }));
 
     matches.forEach(match => {
@@ -353,6 +373,11 @@ app.get('/group-standings/:groupName', async (req, res) => {
 
       team1.goalDifference = team1.goalsFor - team1.goalsAgainst;
       team2.goalDifference = team2.goalsFor - team2.goalsAgainst;
+    });
+
+    // Cộng điểm phạt vào points
+    standings.forEach(standing => {
+      standing.points += standing.openingAbsencePenalty;
     });
 
     standings.sort((a, b) => b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor);
