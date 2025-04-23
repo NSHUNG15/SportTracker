@@ -20,7 +20,7 @@ const Venue = mongoose.model('Venue', venueSchema);
 
 // Schema cho nhóm (bảng A, B, C, D, E, F) - Chỉ dành cho bóng đá
 const groupSchema = new mongoose.Schema({
-  name: { type: String, enum: ['A', 'B', 'C', 'D', 'E', 'F'], required: true },
+  name: { type: String, enum: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'], required: true },
   teams: [{ type: String, required: true }]
 });
 
