@@ -8,57 +8,84 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.x/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
     <link rel="stylesheet" href="./../animation.css">
+    <style>
+        .hero-bg {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        }
+    </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200">
-    <nav class="text-white bg-gray-800 shadow-lg">
+<body class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <nav class="sticky top-0 z-50 text-white shadow-xl bg-gradient-to-r from-indigo-700 to-purple-700 backdrop-blur-lg">
         <div class="p-4 mx-auto lg:container">
             <div class="flex items-center justify-between">
-                <h1 class="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-purple-200 animate-slide animate-duration-300">
-                    SportTracker
-                </h1>                <div class="hidden space-x-4 md:flex">
-                    <a href="./../index.html" class="btn btn-ghost btn-sm">Schedule</a>
-                    <a href="results.html" class="btn btn-ghost btn-sm">Results</a>
-                    <a href="groups.html" class="btn btn-ghost btn-sm btn-active">Groups</a>
-                    <a href="glory.html" class="btn btn-ghost btn-sm">Glory</a>
-                    <a href="admin.html" class="btn btn-ghost btn-sm">Admin</a>
-                </div>
+                <!-- Logo đẹp hơn -->
+                <h1 class="flex items-center gap-3 text-4xl font-black tracking-tighter">
+                    <span class="text-5xl drop-shadow-md">🏆</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-200">SportTracker</span>
+                </h1>                
+                
+                <!-- Mobile menu button -->
                 <div class="block md:hidden">
-                    <button id="mobile-menu-button" class="btn btn-ghost">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <button id="mobile-menu-button" class="text-white btn btn-ghost hover:bg-white/20">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
                     </button>
                 </div>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden space-x-3 md:flex">
+                    <a href="./../index.html" class="text-white btn btn-ghost btn-sm hover:bg-white/20">📅 Schedule</a>
+                    <a href="results.html" class="text-white btn btn-ghost btn-sm hover:bg-white/20">📊 Results</a>
+                    <a href="glory.html" class="text-white btn btn-ghost btn-sm hover:bg-white/20">🌟 Glory</a>
+                    <a href="groups.html" class="text-white border-b-2 border-white btn btn-ghost btn-sm hover:bg-white/20">👥 Groups</a>
+                    <a href="admin.html" class="text-white btn btn-ghost btn-sm hover:bg-white/20">⚙️ Admin</a>
+                </div>
             </div>
-            <div id="mobile-menu" class="hidden py-4 mt-2 space-y-2 md:hidden">
-                <a href="./../index.html" class="block px-4 py-2 text-white hover:bg-gray-700">Schedule</a>
-                <a href="results.html" class="block px-4 py-2 text-white hover:bg-gray-700">Results</a>
-                <a href="groups.html" class="block px-4 py-2 text-white hover:bg-gray-700">Groups</a>
-                <a href="glory.html" class="block px-4 py-2 text-white hover:bg-gray-700">Glory</a>                
-                <a href="admin.html" class="block px-4 py-2 text-white hover:bg-gray-700">Admin</a>
+            
+            <!-- Mobile Navigation Dropdown -->
+            <div id="mobile-menu" class="hidden py-6 mx-4 mt-3 space-y-3 md:hidden bg-white/10 backdrop-blur-md rounded-3xl">
+                <a href="./../index.html" class="flex items-center block gap-3 px-6 py-4 text-lg text-white hover:bg-white/20 rounded-3xl">📅 Schedule</a>
+                <a href="results.html" class="flex items-center block gap-3 px-6 py-4 text-lg text-white hover:bg-white/20 rounded-3xl">📊 Results</a>
+                <a href="glory.html" class="flex items-center block gap-3 px-6 py-4 text-lg text-white hover:bg-white/20 rounded-3xl">🌟 Glory</a>
+                <a href="groups.html" class="flex items-center block gap-3 px-6 py-4 text-lg text-white hover:bg-white/20 rounded-3xl">👥 Groups</a>
+                <a href="admin.html" class="flex items-center block gap-3 px-6 py-4 text-lg text-white hover:bg-white/20 rounded-3xl">⚙️ Admin</a>
             </div>
         </div>
     </nav>
 
     <div class="p-6 mx-auto lg:container">
-        <div class="mb-10 text-center">
-            <h1 class="mb-2 text-4xl font-bold text-gray-800">Group Standings</h1>
-            <p class="text-gray-600">Football group standings for the tournament</p>
+        <div class="relative p-10 mb-10 overflow-hidden text-center text-white shadow-2xl hero-bg rounded-3xl">
+            <div class="absolute inset-0 bg-[radial-gradient(at_top_right,#ffffff20_0%,transparent_70%)]"></div>
+            <h1 class="mb-3 text-5xl font-black tracking-tighter md:text-6xl">Group Standings</h1>
+            <p class="max-w-md mx-auto text-xl opacity-90">Theo dõi bảng xếp hạng của các đội sau từng vòng đấu.</p>
+            <div class="flex justify-center gap-4 mt-6">
+                <div class="h-auto px-6 py-3 text-white border-white badge badge-lg badge-outline">🏟️ Group Rankings</div>
+                <div class="h-auto px-6 py-3 text-white border-white badge badge-lg badge-outline">⚽ Football tournament</div>
+            </div>
         </div>
 
-        <div class="mb-6">
-            <select id="group-select" class="w-full select select-bordered md:w-1/4" onchange="loadGroupStandings()">
-                <option value="A">Group A</option>
-                <option value="B">Group B</option>
-                <option value="C">Group C</option>
-                <option value="D">Group D</option>
-                <option value="E">Group E</option>
-                <option value="F">Group F</option>
-                <option value="G">Group G</option>
-                <option value="H">Group H</option>
-                <option value="I">Group I</option>
-                <option value="J">Group J</option>
-            </select>
+        <div class="p-6 mb-10 bg-white border border-indigo-100 shadow-xl rounded-3xl">
+            <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800">Choose a group</h2>
+                    <p class="text-gray-500">Xem thứ hạng hiện tại của từng bảng.</p>
+                </div>
+                <div class="w-full lg:w-1/3">
+                    <select id="group-select" class="w-full select select-bordered" onchange="loadGroupStandings()">
+                        <option value="A">Group A</option>
+                        <option value="B">Group B</option>
+                        <option value="C">Group C</option>
+                        <option value="D">Group D</option>
+                        <option value="E">Group E</option>
+                        <option value="F">Group F</option>
+                        <option value="G">Group G</option>
+                        <option value="H">Group H</option>
+                        <option value="I">Group I</option>
+                        <option value="J">Group J</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <div class="overflow-x-auto">

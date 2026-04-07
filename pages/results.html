@@ -8,105 +8,161 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.x/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="./../style.css">
     <link rel="stylesheet" href="./../animation.css">
+    <style>
+        /* Thêm style đẹp hơn cho UI */
+        .results-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .results-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.15);
+        }
+        .match-score {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-weight: 800;
+        }
+        .tab-active {
+            background: linear-gradient(to right, #4f46e5, #7c3aed);
+            color: white;
+            box-shadow: 0 10px 15px -3px rgb(79 70 229);
+        }
+        .hero-bg {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        }
+    </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-    <nav class="text-white bg-indigo-800 shadow-lg">
+<body class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <nav class="sticky top-0 z-50 text-white shadow-xl bg-gradient-to-r from-indigo-700 to-purple-700 backdrop-blur-lg">
         <div class="p-4 mx-auto lg:container">
             <div class="flex items-center justify-between">
-                <h1 class="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-purple-200 animate-slide animate-duration-300">
-                    SportTracker
+                <!-- Logo đẹp hơn -->
+                <h1 class="flex items-center gap-3 text-4xl font-black tracking-tighter">
+                    <span class="text-5xl drop-shadow-md">🏆</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-200">SportTracker</span>
                 </h1>                
+                
                 <!-- Mobile menu button -->
                 <div class="block md:hidden">
-                    <button id="mobile-menu-button" class="btn btn-ghost">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <button id="mobile-menu-button" class="text-white btn btn-ghost hover:bg-white/20">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
                     </button>
                 </div>
                 
                 <!-- Desktop Navigation -->
-                <div class="hidden space-x-4 md:flex">
-                    <a href="./../index.html" class="btn btn-ghost btn-sm">Schedule</a>
-                    <a href="results.html" class="btn btn-ghost btn-sm">Results</a>
-                    <a href="glory.html" class="btn btn-primary btn-sm">Glory</a>
-                    <a href="groups.html" class="btn btn-primary btn-sm">Groups</a>
-                    <a href="admin.html" class="btn btn-primary btn-sm">Admin</a>
+                <div class="hidden space-x-3 md:flex">
+                    <a href="./../index.html" class="text-white btn btn-ghost btn-sm hover:bg-white/20">📅 Schedule</a>
+                    <a href="results.html" class="text-white border-b-2 border-white btn btn-ghost btn-sm hover:bg-white/20">📊 Results</a>
+                    <a href="glory.html" class="text-white btn btn-ghost btn-sm hover:bg-white/20">🌟 Glory</a>
+                    <a href="groups.html" class="text-white btn btn-ghost btn-sm hover:bg-white/20">👥 Groups</a>
+                    <a href="admin.html" class="text-white btn btn-ghost btn-sm hover:bg-white/20">⚙️ Admin</a>
                 </div>
             </div>
             
-            <!-- Mobile Navigation Dropdown (hidden by default) -->
-            <div id="mobile-menu" class="hidden py-4 mt-2 space-y-2 md:hidden">
-                <a href="./../index.html" class="block px-4 py-2 text-white hover:bg-indigo-700">Schedule</a>
-                <a href="results.html" class="block px-4 py-2 text-white hover:bg-indigo-700">Results</a>
-                <a href="glory.html" class="block px-4 py-2 text-white hover:bg-indigo-700">Glory</a>
-                <a href="groups.html" class="block px-4 py-2 text-white hover:bg-indigo-700">Groups</a>
-                <a href="admin.html" class="block px-4 py-2 text-white hover:bg-indigo-700">Admin</a>
-
+            <!-- Mobile Navigation Dropdown -->
+            <div id="mobile-menu" class="hidden py-6 mx-4 mt-3 space-y-3 md:hidden bg-white/10 backdrop-blur-md rounded-3xl">
+                <a href="./../index.html" class="flex items-center block gap-3 px-6 py-4 text-lg text-white hover:bg-white/20 rounded-3xl">📅 Schedule</a>
+                <a href="results.html" class="flex items-center block gap-3 px-6 py-4 text-lg text-white hover:bg-white/20 rounded-3xl">📊 Results</a>
+                <a href="glory.html" class="flex items-center block gap-3 px-6 py-4 text-lg text-white hover:bg-white/20 rounded-3xl">🌟 Glory</a>
+                <a href="groups.html" class="flex items-center block gap-3 px-6 py-4 text-lg text-white hover:bg-white/20 rounded-3xl">👥 Groups</a>
+                <a href="admin.html" class="flex items-center block gap-3 px-6 py-4 text-lg text-white hover:bg-white/20 rounded-3xl">⚙️ Admin</a>
             </div>
         </div>
     </nav>
 
-    <div class="p-6 mx-auto lg:container">
-        <div class="mb-10 text-center">
-            <h1 class="mb-2 text-4xl font-bold text-indigo-900">Match Results</h1>
-            <p class="text-gray-600">View completed matches and their scores</p>
+    <div class="p-6 mx-auto lg:container max-w-7xl">
+        <!-- Hero Header -->
+        <div class="relative p-10 mb-10 overflow-hidden text-center text-white shadow-2xl hero-bg rounded-3xl">
+            <div class="absolute inset-0 bg-[radial-gradient(at_top_right,#ffffff20_0%,transparent_70%)]"></div>
+            <h1 class="mb-3 text-5xl font-black tracking-tighter md:text-6xl">Match Results</h1>
+            <p class="max-w-md mx-auto text-xl opacity-90">Xem kết quả các trận đấu đã kết thúc • Cập nhật thời gian thực</p>
+            <div class="flex justify-center gap-4 mt-6">
+                <div class="h-auto px-6 py-3 text-white border-white badge badge-lg badge-outline">🔥 LIVE UPDATES</div>
+                <div class="h-auto px-6 py-3 text-white border-white badge badge-lg badge-outline">🏆 FINAL SCORES</div>
+            </div>
         </div>
         
-        <!-- Filter & Search -->
-        <div class="p-4 mb-8 bg-white rounded-lg shadow-md">
-            <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
-                <div class="flex-1 w-full">
-                    <input type="text" id="search-results" placeholder="Search results..." class="w-full input input-bordered" onkeyup="searchResults()">
+        <!-- Filter Bar đẹp hơn -->
+        <div class="p-6 mb-10 bg-white border border-indigo-100 shadow-xl rounded-3xl">
+            <div class="flex flex-col items-start gap-6 lg:flex-row lg:items-center">
+                <!-- Search -->
+                <div class="relative flex-1 w-full lg:max-w-md">
+                    <input 
+                        type="text" 
+                        id="search-results" 
+                        placeholder="Tìm kiếm trận đấu, đội bóng, vận động viên..." 
+                        class="w-full pl-12 text-lg input input-bordered h-14 rounded-3xl focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        onkeyup="searchResults()">
+                    <div class="absolute text-2xl text-indigo-400 -translate-y-1/2 top-2 left-2">🔎</div>
                 </div>
                 
                 <!-- Desktop Tabs -->
-                <div class="hidden md:flex tabs tabs-boxed">
-                    <a class="tab tab-active" onclick="filterResults('all')">All</a>
-                    <a class="tab" onclick="filterResults('Football')">Football</a>
-                    <a class="tab" onclick="filterResults('Badminton')">Badminton</a>
-                    <a class="tab" onclick="filterResults('Chess')">Chess</a>
-                    <a class="tab" onclick="filterResults('Athletics')">Athletics</a>
+                <div class="flex-1 hidden bg-gray-100 md:flex tabs tabs-boxed rounded-3xl lg:flex-none">
+                    <a onclick="filterResults('all')" class="flex items-center justify-center gap-2 px-8 text-base font-semibold tab tab-active rounded-3xl">
+                        🏆 All
+                    </a>
+                    <a onclick="filterResults('Football')" class="flex items-center justify-center gap-2 px-8 text-base font-semibold tab rounded-3xl">
+                        ⚽ Football
+                    </a>
+                    <a onclick="filterResults('Badminton')" class="flex items-center justify-center gap-2 px-8 text-base font-semibold tab rounded-3xl">
+                        🏸 Badminton
+                    </a>
+                    <a onclick="filterResults('Chess')" class="flex items-center justify-center gap-2 px-8 text-base font-semibold tab rounded-3xl">
+                        ♟️ Chess
+                    </a>
+                    <a onclick="filterResults('Athletics')" class="flex items-center justify-center gap-2 px-8 text-base font-semibold tab rounded-3xl">
+                        🏃 Athletics
+                    </a>
                 </div>
                 
                 <!-- Mobile Dropdown -->
                 <div class="w-full md:hidden">
-                    <select class="w-full select select-bordered" id="mobile-filter" onchange="filterResults(this.value)">
-                        <option value="all">All Sports</option>
-                        <option value="Football">Football</option>
-                        <option value="Badminton">Badminton</option>
-                        <option value="Chess">Chess</option>
-                        <option value="Athletics">Athletics</option>
+                    <select id="mobile-filter" onchange="filterResults(this.value)" class="w-full text-lg select select-bordered h-14 rounded-3xl">
+                        <option value="all">🏆 All Sports</option>
+                        <option value="Football">⚽ Football</option>
+                        <option value="Badminton">🏸 Badminton</option>
+                        <option value="Chess">♟️ Chess</option>
+                        <option value="Athletics">🏃 Athletics</option>
+                    </select>
+                </div>
+
+                <!-- Event Type Filter -->
+                <div class="flex-1 lg:flex-none lg:w-72">
+                    <select id="event-type-filter" onchange="filterResults(getActiveTab(), this.value)" class="w-full text-lg border-indigo-200 select select-bordered h-14 rounded-3xl focus:border-indigo-500">
+                        <option value="all">🎟️ All Event Types</option>
+                        <!-- JS sẽ thêm các option khác -->
                     </select>
                 </div>
             </div>
         </div>
-        <div class="flex-1 max-w-md mb-5 ml-auto mr-0">
-            <select id="event-type-filter" class="w-full select select-bordered" onchange="filterResults(getActiveTab(), this.value)">
-                <option value="all">All Event Types</option>
-            </select>
-        </div>
+
+        <!-- Location -->
         <div class="mb-10 text-center">
-            <h1 id="location" class="mb-2 text-2xl font-semibold text-red-700"></h1>
-        </div>
-        <div id="results-container">
-        <!-- Rounds và results sẽ được hiển thị ở đây -->
+            <h1 id="location" class="inline-flex items-center gap-3 px-8 py-4 text-3xl font-bold text-red-600 bg-white shadow-md rounded-3xl">
+                📍 <span class="text-gray-700"></span>
+            </h1>
         </div>
 
-        <!-- No results message -->
+        <!-- Results Container -->
+        <div id="results-container" class="space-y-16">
+            <!-- Sample results đẹp hơn để demo UI (bạn có thể xóa sau khi JS load dữ liệu thực) -->
+        </div>
+
+        <!-- No results -->
         <div id="no-results" class="hidden">
-            <div class="p-10 mt-6 text-center">
-                <div class="mb-4 text-5xl text-gray-300">🏆</div>
-                <h3 class="mb-2 text-xl font-semibold">No results available yet</h3>
-                <p class="text-gray-500">Check back later for match outcomes</p>
+            <div class="p-16 mt-10 text-center shadow-inner bg-white/70 backdrop-blur rounded-3xl">
+                <div class="mb-6 text-7xl">🏆</div>
+                <h3 class="mb-3 text-3xl font-bold text-gray-700">Chưa có kết quả nào</h3>
+                <p class="max-w-xs mx-auto text-gray-500">Các trận đấu đang diễn ra hoặc chưa kết thúc. Quay lại sau nhé!</p>
             </div>
         </div>
     </div>
     
-    <footer class="mt-12 text-white bg-indigo-900 ">
-        <div class="container mx-auto text-center">
-            <p>© 2025 SportTracker. All rights reserved.</p>
-            <p>© Design and source code copyright: Nguyễn Sinh Hùng</p>
+    <footer class="py-12 mt-20 text-white bg-gradient-to-r from-indigo-800 to-purple-800">
+        <div class="container px-6 mx-auto text-center">
+            <p class="text-lg">© 2026 SportTracker. All rights reserved.</p>
+            <p class="mt-1 text-sm opacity-75">Design &amp; Code by Nguyễn Sinh Hùng • Made with ❤️ in Việt Nam</p>
         </div>
     </footer>
 
