@@ -5,7 +5,7 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-const mongoURI = 'mongodb+srv://suag4026:botcodon15@cluster0.7sbst.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0';
+const mongoURI = 'mongodb+srv://suag4026:botdangcode15@cluster0.hnxptmo.mongodb.net/?appName=Cluster0';
 mongoose.connect(mongoURI)
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch(err => console.error('MongoDB connection error:', err));

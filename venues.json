@@ -1,0 +1,24 @@
+{
+  "venues": [
+    {
+      "name": "Sân Hòa Xuân",
+      "sport": "Football",
+      "location": "Đà Nẵng"
+    },
+    {
+      "name": "Nhà thi đấu Tiên Sơn",
+      "sport": "Badminton",
+      "location": "Đà Nẵng"
+    },
+    {
+      "name": "Sân điền kinh",
+      "sport": "Athletics",
+      "location": "Huế"
+    },
+    {
+      "name": "Phòng cờ",
+      "sport": "Chess",
+      "location": "Đà Nẵng"
+    }
+  ]
+}
